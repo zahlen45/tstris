@@ -1,16 +1,43 @@
+import { pieces } from "./constants"
+
 class Tetrimino{
-    type: string // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
-    center: [number, number];   // Posicion de la pieza
+    type: string                // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
+    center: [number, number]    // Posicion de la pieza
 
-    constructor(){
+    constructor(type: string){
+        /*
 
+        */
+
+        if(pieces.includes(type)){
+            this.type = type
+        }else{
+            throw new console.error("El tipo no cuadra con ninguna de las piezas")
+        }
     }
 
+    /**
+     * Metodo que mueve el centro del tetrimino
+     * @param vect Vector de traslacion
+     */
     move(vect: [number, number]): void{
-        this.center = [this.center[0] + vect[0], this.center[1] + vect[1]];
+        this.center = [this.center[0] + vect[0], this.center[1] + vect[1]]
     }
 
+    /**
+     * Metodo que hace girar el tetrimino
+     * @param cw Bool que indica si se gira en el sentido de las agujas del reloj (cw: clockwise) o en el contrario (ccw: counter-clockwise)
+     * @returns True/False dependiendo de si se produce un kick o no (t-spin)
+     */
     rotate(cw: boolean): boolean{
+
+        //norm_pos = pos - center
+        //norm_rot_pos = (-norm_pos(y), norm_pos(x)) // CW * pos
+        //rot_pos = norm_rot_pos + center
+        // operacion: (-pos(y) + center(y) + center(x), pos(x) - center(x) + center(y))
+            
         return false;
     }
+
+
 }

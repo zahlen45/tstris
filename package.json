@@ -1,0 +1,19 @@
+{
+  "name": "webtris",
+  "version": "0.0.1",
+  "description": "",
+  "main": "node ./src/main.js",
+  "scripts": {
+    "test": "node ./src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zahlen45/webtris.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zahlen45/webtris/issues"
+  },
+  "homepage": "https://github.com/zahlen45/webtris#readme"
+}

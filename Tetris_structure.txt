@@ -22,7 +22,7 @@ controla toda la logica para jugar
 	- metodos para dibujar el tablero (?):
 		- draw_piece
 		- draw_board
-	- metodos que se ejecutan cuando una tecla se presiona (movimiento)
+	- metodos que se ejecutan cuando una tecla se presiona (eventos)
 
 problemas:
 - rotacion matematica (?)

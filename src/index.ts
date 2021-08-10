@@ -2,8 +2,9 @@ import { Game } from './game';
 
 // Config?
 
-var config = {
-    "square-length": 10,
+var config: { [opt: string]: any } = {
+    "square-length": 30,
+    "fps": 60
 }
 
 function create_canvas(){
@@ -22,4 +23,4 @@ function create_canvas(){
     ctx.fill()
 }
 
-var g = new Game()
+var g = new Game(config)

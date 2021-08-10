@@ -26,25 +26,27 @@ controla toda la logica para jugar
 
 problemas:
 - rotacion matematica (?)
+	> (?) solucion:
+	matrices de rotacion
+	CW
+	[0 -1]
+	[1  0] 
 
-matrices de rotacion
-CW
-[0 -1]
-[1  0] 
+	CCW
+	[0  1]
+	[-1 0]
 
-CCW
-[0  1]
-[-1 0]
+	tuple rot_cw(center, pos){
+	norm_pos = pos - center
+	norm_rot_pos = (-norm_pos(y), norm_pos(x)) // CW * pos
+	rot_pos = norm_rot_pos + center
+	// operacion: (-pos(y) + center(y) + center(x), pos(x) - center(x) + center(y))
+	}
 
-tuple rot_cw(center, pos){
-norm_pos = pos - center
-norm_rot_pos = (-norm_pos(y), norm_pos(x)) // CW * pos
-rot_pos = norm_rot_pos + center
-// operacion: (-pos(y) + center(y) + center(x), pos(x) - center(x) + center(y))
-}
-
-para ccw es igual pero con la matriz de ccw
+	para ccw es igual pero con la matriz de ccw
 
 - hard drop
 - controles, das y arr
 - centro del tetrimino para I y O ya que no estan en una celda sino en uno de los vertices (ver SRS)
+	> (?) solucion: poner como *.5 la posicion del centro en el caso de I y O. El giro segun esta planteado
+	funcionaria bien de esta manera

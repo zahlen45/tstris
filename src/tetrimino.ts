@@ -38,6 +38,4 @@ class Tetrimino{
             
         return false;
     }
-
-
 }

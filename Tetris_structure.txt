@@ -1,5 +1,5 @@
 ﻿posibles nombres: 
-	- 
+	- TSTris (TST de T-Spin Triple y TS de TypeScript)
 
 clase tetrimino:
 	- atributo posicion (centro)
@@ -13,7 +13,7 @@ clase juego:
 
 controla toda la logica para jugar
 	- atributo queue que lleva la lista de las piezas siguiente
-	- atributo hold que guarda la piea guardada
+	- atributo hold que guarda la pieza guardada
 	- "constante" que tiene el tiempo que tarda la pieza en colocarse
 
 	- metodo hold_piece que guarda la pieza
@@ -50,3 +50,28 @@ problemas:
 - centro del tetrimino para I y O ya que no estan en una celda sino en uno de los vertices (ver SRS)
 	> (?) solucion: poner como *.5 la posicion del centro en el caso de I y O. El giro segun esta planteado
 	funcionaria bien de esta manera
+
+- Planteamiento de la matriz del tablero y el movimiento de la pieza actual:
+
+	> Traslaciones: 
+		-- Primera idea: Antes de Tetrimino.move(...) se tiene que comprobar si la posicion despues de trasladar
+		la pieza, se puede colocar o no
+		-- Segunda idea: De alguna manera tener controlado que minos estan en cada lado, i.e. las posiciones
+		de los minos que miran hacia arriba/abajo/derecha/izquierda
+			Generar al principio las 4 caras de cada tetrimino. La idea es que al moverse a alguna direccion,
+			solo se compruebe las posiciones de los minos de esa direccion
+			Cuando se produzca una rotacion, solo es necesario cambiar los arrays dependiendo de si es cw o ccw
+		-- Tercera idea: Guardar las posiciones que son adyacentes al tetrimino. De momento solo las de las 3
+		direcciones principales (arriba no es necesario ***). De esta manera solo es necesario comprobar si 
+		al intentar moverse en alguna direccion, las casillas adyacentes estan ocupadas o no.
+
+		*** La unica manera de que un tetrimino vaya para arriba es que haya un kick y eso esta cubierto en las Rotaciones
+
+		Otra manera de mejorar esto es solo guardar en el tablero las casillas que estan ocupadas. Asi no
+		hace falta comprobar tantas posiciones. En un principio no esta muy claro si es mejor tener las 
+		ocupadas o las que no. 
+
+		Quiza array.filter tenga una funcion que ayude a hacer interseccion de arrays
+
+	> Rotaciones: (similar a las traslaciones pero hay que comprobar uno de tras de otro cada kick
+	hasta que se pueda producir una rotacion o todas fallen)

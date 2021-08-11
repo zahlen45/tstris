@@ -1,12 +1,5 @@
 import { Game } from './game';
 
-// Config?
-
-var config: { [opt: string]: any } = {
-    "square-length": 30,
-    "fps": 60
-}
-
 function create_canvas(){
     // Para testear el dibujo en el canvas
     console.log("Pasa")
@@ -23,4 +16,4 @@ function create_canvas(){
     ctx.fill()
 }
 
-var g = new Game(config)
+var g = new Game()

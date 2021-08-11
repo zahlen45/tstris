@@ -1,6 +1,6 @@
 import { pieces } from "./constants"
 
-class Tetrimino{
+export class Tetrimino{
     type: string = ''                // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
     center: [number, number] = [0, 0]    // Posicion de la pieza
 

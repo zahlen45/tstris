@@ -16,7 +16,7 @@ export class Game{
     time_drop: number = 0
     last_drop: number;
 
-    board: string[][] = [[]]        // Puede que la pieza que sea me sirva para colorear luego (?)
+    board: string[][] = []   // Puede que la pieza que sea me sirva para colorear luego (?)
     
     constructor(){
         /*
@@ -28,6 +28,8 @@ export class Game{
         //this.Draw_board()
 
         this.delta = 1000/config['fps']
+
+        this.New_board()
 
         this.New_bag()
         this.First_queue()
@@ -80,21 +82,23 @@ export class Game{
         }
     }
 
+    /**
+     * Game loop
+     */
     public Update(): void{
-        // Game loop
-        
-        //super.Update();
 
         // Guarda el ultimo momento por el que pasa aqui
         [this._lastTimestamp, this.time_drop]  = [Date.now(), Date.now() - this.last_drop]
 
+        // Caida por gravedad
         if(this.time_drop >= this.next_drop){
-            this.current_piece.move(0, -1)
-            console.log(this.time_drop);
-            this.last_drop = Date.now()
-
-            console.log([this.current_piece.x, this.current_piece.y]);
-            //console.log([30 * (this.current_piece.x - 0.5), 600 - 30 * (this.current_piece.y + 0.5)]);
+            if(this.CheckPosition([0, -1])){
+                this.current_piece.move(0, -1)
+                this.last_drop = Date.now()
+            }else{
+                this.FixPiece()
+                this.New_piece()
+            }
         }
 
         this.Render()
@@ -121,10 +125,44 @@ export class Game{
      * @returns True si se puede mover y False en caso contrario
      */
     CheckPosition(vect: number[]): boolean{
+        var result = true
 
-        return false
+        // Muy mejorable
+        this.current_piece.minos.forEach(mino => {
+            var new_x = mino[0] + vect[0]
+            var new_y = mino[1] + vect[1]
+
+            let check_border = (new_x < 1 || new_x > 11 || new_y < 1)
+            
+            if(check_border || (this.board[new_y][new_x] !== "")){
+                result = false
+            }
+        });
+        return result
     }
 
+    /**
+     * Fija el tetrimino actual en el tablero
+     */
+    FixPiece(){
+        this.current_piece.minos.forEach(mino => {
+            this.board[mino[1]][mino[0]] = this.current_piece.type
+        });
+        
+        this.ClearLine()
+    }
+
+    /**
+     * Elimina las lineas completas. Solo se llama al fijar una pieza
+     * Es posible que en un futuro devuelva el numero de lineas y si hay t-spin o all-clear
+     */
+    ClearLine(){
+        // TODO
+    }
+
+    /**
+     * Establece la primera cola. Solo se llama al principio, en el constructor
+     */
     First_queue(){
         this.queue = this.bag.splice(6, 1)
     }
@@ -185,6 +223,16 @@ export class Game{
         console.log(this.held_piece) // Pasaba 2 veces: una para up y otra para down
     }
 
+    /**
+     * Genera un nuevo tablero
+     */
+    New_board(){
+        var row = Array<string>(10).fill("")
+        for (let i = 0; i < 40; i++) {
+            this.board.push(row.slice())
+        }
+    }
+
     //#endregion
 
     //#region Graficos
@@ -195,6 +243,8 @@ export class Game{
     Draw_board(){
         // Nota: Al principio dibujare todo cada vez que renderice la animacion aunque no cambie nada
         // Intentare mejorarlo despues (capas?)
+
+        // TODO
     }
 
     /**

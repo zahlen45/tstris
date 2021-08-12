@@ -1,4 +1,4 @@
-import { config, pieces, canvas } from "./constants"
+import { config, pieces, colors, canvas } from "./constants"
 import { Tetrimino } from "./tetrimino"
 
 export class Game{
@@ -6,13 +6,13 @@ export class Game{
 
     private delta: number
 
-    held_piece: string = ''
+    held_piece: string = ""
     held: boolean = false
 
     queue: string[] = []
-    bag: string[] = pieces
-    current_piece: Tetrimino;
-    next_drop: number = 2000
+    bag: string[] = pieces.slice()
+    current_piece!: Tetrimino;
+    next_drop: number = 500
     time_drop: number = 0
     last_drop: number;
 
@@ -31,13 +31,12 @@ export class Game{
 
         this.New_bag()
         this.First_queue()
-
-        this.current_piece = new Tetrimino("I")
+        this.Spawn_piece()
 
         document.addEventListener('keydown', (event) => this.KeyEvents(event, true))
-        document.addEventListener('keyup', (event) => this.KeyEvents(event, false))
 
         this.last_drop = Date.now()
+
         // Al final de todo
         this.Update()
     }
@@ -45,7 +44,10 @@ export class Game{
     KeyEvents(event: KeyboardEvent, down: boolean): void{
         var key = event.key;
 
-        var pos = key.indexOf(key)
+        if(event.key === "n") this.New_piece()
+        if(event.code === "Space") this.Hold_piece()
+
+        var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
 
         if(pos !== -1){
             const key_canvas = document.getElementById('key-canvas') as HTMLCanvasElement
@@ -92,7 +94,7 @@ export class Game{
             this.last_drop = Date.now()
 
             console.log([this.current_piece.x, this.current_piece.y]);
-            console.log([30 * (this.current_piece.x - 0.5), 600 - 30 * (this.current_piece.y + 0.5)]);
+            //console.log([30 * (this.current_piece.x - 0.5), 600 - 30 * (this.current_piece.y + 0.5)]);
         }
 
         this.Render()
@@ -115,9 +117,11 @@ export class Game{
 
     /**
      * Comprueba si se puede hacer el movimiento de la pieza
+     * @param vect Vector de traslacion de la pieza
      * @returns True si se puede mover y False en caso contrario
      */
-    CheckPosition(): boolean{
+    CheckPosition(vect: number[]): boolean{
+
         return false
     }
 
@@ -126,9 +130,10 @@ export class Game{
     }
 
     /** 
-     * Coloca aleatoriamente las piezas del nuevo saco (Fisher-Yates (aka Knuth) Shuffle)
+     * Coloca aleatoriamente las piezas del nuevo saco (usando la mezcla de Fisher-Yates (aka Knuth))
      */
     New_bag(){
+        this.bag = pieces.slice()
         var indActual = 7, indRand;
 
         while (0 !== indActual) {
@@ -140,34 +145,44 @@ export class Game{
     }
 
     /**
-     * Genera una nueva pieza y la añade a la cola
+     * Saca la primera pieza de la cola y mete la primera de la bolsa a la cola
      */
-    New_piece(): void{
-        this.held = false
-
+    Spawn_piece(){
         // Si el saco esta vacio, lo rellena
         if(this.bag.length == 0) this.New_bag()
 
-        //#region Peor (?)
-        // Elige una pieza del saco al azar y la mete en la cola
-        //const randomIndex = Math.floor(Math.random() * this.bag.length)
-        //const randomPiece = this.bag[randomIndex]
-        //this.queue.push(randomPiece)
-        //this.bag.splice(randomIndex, 1)
-        //#endregion
-
-        // Mejor manera (?) 
         this.queue.push(this.bag[0])
+        this.current_piece = new Tetrimino(this.queue.shift()!)
         this.bag.shift()
     }
 
+    /**
+     * Genera una nueva pieza y la añade a la cola. Tambien pone "held" a False
+     */
+    New_piece(): void{
+        this.held = false
+        this.Spawn_piece()
+    }
+
+    /**
+     * Guarda la pieza y la intercambia si hay una guardada
+     */
     Hold_piece(): void{
-        // TODO: Guarda una pieza
         if(!this.held){
             this.held = true;
 
-            [this.held_piece, this.current_piece] = [this.current_piece.type, new Tetrimino(this.held_piece)]
+            if(this.held_piece === "") {
+                this.held_piece = this.current_piece.type
+
+                this.Spawn_piece()
+            }else{
+                var temp = this.current_piece.type
+
+                this.current_piece = new Tetrimino(this.held_piece)
+                this.held_piece = temp
+            }
         }
+        console.log(this.held_piece) // Pasaba 2 veces: una para up y otra para down
     }
 
     //#endregion
@@ -178,7 +193,8 @@ export class Game{
      * Dibuja el tablero
      */
     Draw_board(){
-
+        // Nota: Al principio dibujare todo cada vez que renderice la animacion aunque no cambie nada
+        // Intentare mejorarlo despues (capas?)
     }
 
     /**
@@ -189,12 +205,15 @@ export class Game{
 
         this.current_piece.minos.forEach(mino => {
             if(ctx != null){
-                ctx.fillStyle = 'red'               
+                ctx.fillStyle = colors[this.current_piece.type]               
                 ctx.fillRect(30 * mino[0], 600 - 30 * mino[1], 30, 30)
             }
         });
     }
 
+    /**
+     * Limpia el canvas para renderizar una nueva frame
+     */
     Clear_canvas(){
         var ctx = canvas.getContext('2d')
         ctx?.clearRect(0, 0, canvas.width, canvas.height)
@@ -212,22 +231,22 @@ export class Game{
         var ctx = canvas.getContext('2d')
         if(ctx != null){
             ctx.strokeStyle = 'grey'
-            ctx.lineWidth = 0.5
+            ctx.lineWidth = 1
 
             // Lineas verticales
-            for (let i = 0; i < 10; i++) {
+            for (let i = 1; i < 10; i++) {
                 ctx?.beginPath();
-                ctx?.moveTo(config['square-length'] * i, 0)
-                ctx?.lineTo(config['square-length'] * i, config['square-length'] * 20)
+                ctx?.moveTo(config['square-length'] * i + 0.5, 0)
+                ctx?.lineTo(config['square-length'] * i + 0.5, config['square-length'] * 20 + 0)
                 ctx?.closePath()
                 ctx?.stroke()
             }
     
             // Lineas horizontales
-            for (let i = 0; i < 20; i++) {
+            for (let i = 1; i < 20; i++) {
                 ctx?.beginPath()
-                ctx?.moveTo(0, config['square-length'] * i)
-                ctx?.lineTo(config['square-length'] * 10, config['square-length'] * i)
+                ctx?.moveTo(0, config['square-length'] * i + 0.5)
+                ctx?.lineTo(config['square-length'] * 10, config['square-length'] * i + 0.5)
                 ctx?.closePath()
                 ctx?.stroke()
             }
@@ -236,12 +255,6 @@ export class Game{
         {
             throw new Error('No existe el canvas/contexto')
         }
-    }
-
-    Draw_square(x: number, y: number, size_x: number, size_y: number, outline: boolean, fill: boolean, ctx: any){
-        ctx.strokeStyle = 'red'
-        if(fill) ctx?.fillRect(x, y, size_x, size_y);
-        if(outline) ctx?.strokeRect(x, y, size_x, size_y)
     }
 
     //#endregion

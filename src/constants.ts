@@ -1,5 +1,19 @@
 export const pieces: string[] = ["I", "J", "L", "S", "Z", "O", "T"];
 
+export class tetrimino_defaults {
+    
+}
+
+export const colors: { [piece: string]: string } = {
+    "I" : '#00FFF5',
+    "J" : '#0011FF',
+    "L" : '#FF9B00',
+    "S" : '#00FF08',
+    "Z" : '#FF0000',
+    "O" : '#FFEE00',
+    "T" : '#BB00FF',
+}
+
 export const spawn_pos: { [piece: string] : [number, number]} = {
     "I" : [4.5, 20.5],
     "J" : [4, 21],

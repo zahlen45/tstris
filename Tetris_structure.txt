@@ -73,5 +73,10 @@ problemas:
 
 		Quiza array.filter tenga una funcion que ayude a hacer interseccion de arrays
 
+		Quizas sea tambien util tener el tablero en forma de filas y de columnas. En forma de filas
+		funciona mejor el movimiento horizontal y el de columnas el vertical
+
+		Los minos de cada tetrimino estan determinados por la posicion del centro y de su orientacion
+
 	> Rotaciones: (similar a las traslaciones pero hay que comprobar uno de tras de otro cada kick
 	hasta que se pueda producir una rotacion o todas fallen)

@@ -1,27 +1,50 @@
-import { pieces } from "./constants"
+import { pieces, spawn_pos, spawn_dir } from "./constants"
 
 export class Tetrimino{
-    type: string = ''                // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
-    center: [number, number] = [0, 0]    // Posicion de la pieza
+    type: string = ''    // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
+    x: number = 0
+    y: number = 0
+    minos: Array<number[]> = []
+
+    prev_x: number = 0
+    prev_y: number = 0
 
     constructor(type: string){
-        /*
-
-        */
-
+        // Comprueba que el tipo esta bien puesto
+        
         if(pieces.some(p => p === type)){
             this.type = type
         }else{
             throw new Error("El tipo no coincide con ninguna pieza")
         }
+
+        this.spawn()
+    }
+
+    /**
+     * Establece la posicion inicial de la pieza
+     */
+    spawn(){
+        [this.x, this.y] = spawn_pos[this.type]
+
+        spawn_dir[this.type].forEach(rel_mino => {
+            var mino = [this.x + rel_mino[0], this.y + rel_mino[1]]
+            this.minos.push(mino)
+        });
     }
 
     /**
      * Metodo que mueve el centro del tetrimino
      * @param vect Vector de traslacion
      */
-    move(vect: [number, number]): void{
-        this.center = [this.center[0] + vect[0], this.center[1] + vect[1]]
+    move(x: number, y: number): void{
+        this.x += x
+        this.y += y
+
+        this.minos.forEach(mino => {
+            mino[0] += x 
+            mino[1] += y
+        });
     }
 
     /**

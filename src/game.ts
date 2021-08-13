@@ -124,6 +124,8 @@ export class Game{
             }else{
                 this.FixPiece()
                 this.New_piece()
+                console.log(this.board);
+                
             }
         }
 
@@ -291,7 +293,15 @@ export class Game{
         // Nota: Al principio dibujare todo cada vez que renderice la animacion aunque no cambie nada
         // Intentare mejorarlo despues (capas?)
 
-        // TODO
+        for (let i = 0; i < 20; i++) {
+            for (let j = 0; j < 10; j++) {
+                if(this.board[i][j] !== ""){
+                    var ctx = canvas.getContext('2d')
+                    ctx!.fillStyle = colors[this.board[i][j]]
+                    ctx!.fillRect(30 * j, 600 - 30 * i, 30, 30)
+                }
+            }
+        }
     }
 
     /**
@@ -301,10 +311,8 @@ export class Game{
         var ctx = canvas.getContext('2d')
 
         this.current_piece.minos.forEach(mino => {
-            if(ctx != null){
-                ctx.fillStyle = colors[this.current_piece.type]               
-                ctx.fillRect(30 * mino[0], 600 - 30 * mino[1], 30, 30)
-            }
+            ctx!.fillStyle = colors[this.current_piece.type]               
+            ctx!.fillRect(30 * mino[0], 600 - 30 * mino[1], 30, 30)
         });
     }
 

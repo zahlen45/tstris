@@ -124,8 +124,6 @@ export class Game{
             }else{
                 this.FixPiece()
                 this.New_piece()
-                console.log(this.board);
-                
             }
         }
 
@@ -160,7 +158,7 @@ export class Game{
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
 
-            let check_border = (new_x < 1 || new_x > 11 || new_y < 1)
+            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)
             
             if(check_border || (this.board[new_y][new_x] !== "")){
                 result = false
@@ -175,13 +173,9 @@ export class Game{
 
         this.current_piece.minos.forEach(mino => {
             var new_x = this.current_piece.x - factor * (mino[1] - this.current_piece.y)
-            var new_y = this.current_piece.y + factor * (mino[0] - this.current_piece.x)
-            
-            console.log(mino)
-            console.log([new_x, new_y]);
-            
+            var new_y = this.current_piece.y + factor * (mino[0] - this.current_piece.x)            
 
-            let check_border = (new_x < 1 || new_x > 11 || new_y < 1)
+            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)
             
             if(check_border || (this.board[new_y][new_x] !== "")){
                 result = false
@@ -206,7 +200,7 @@ export class Game{
      * Es posible que en un futuro devuelva el numero de lineas y si hay t-spin o all-clear
      */
     ClearLine(){
-        // TODO
+        
     }
 
     /**

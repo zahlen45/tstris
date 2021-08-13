@@ -59,7 +59,7 @@ export class Game{
                 // TODO: Hard drop
                 break;
             case 1:
-                // TODO: Soft drop
+                if(this.CheckPosition([0, -1])) this.current_piece.move(0, -1)
                 break;
             case 2:
                 if(this.CheckPosition([-1, 0])) this.current_piece.move(-1, 0)

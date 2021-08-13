@@ -218,7 +218,7 @@ export class Game{
             this.board[mino[1]][mino[0]] = this.current_piece.type
         });
         
-        this.ClearLine()
+        this.ClearLines()
         this.New_piece()
 
         console.log(this.board);
@@ -228,13 +228,23 @@ export class Game{
      * Elimina las lineas completas. Solo se llama al fijar una pieza
      * Es posible que en un futuro devuelva el numero de lineas y si hay t-spin o all-clear
      */
-    ClearLine(){
+    ClearLines(){
+        // Filtra las completas (aka las que tienen alguna c === "" se las queda)
+        this.board = this.board.filter(r => r.some(c => c === ""))
+
+        // Rellena las que quedan
+        let new_rows = 40 - this.board.length
+        let arr = Array(new_rows).fill(Array(10).fill(""))
+        this.board.push(arr)
+
+        /*
         for (let i = 0; i < 21; i++) {
-            if(!this.board[i].some(c => c === "")){
+          if(!this.board[i].some(c => c === "")){
                 this.board.splice(i, 1)
                 this.board.push(Array(10).fill(""))
             }
         }
+        */
     }
 
     /**

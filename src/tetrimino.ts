@@ -6,9 +6,7 @@ export class Tetrimino{
     y: number = 0
     orient: number = 0
     minos: Array<number[]> = []
-
-    prev_x: number = 0
-    prev_y: number = 0
+    pre_minos: Array<number[]> = []
 
     constructor(type: string){
         // Comprueba que el tipo esta bien puesto
@@ -53,18 +51,15 @@ export class Tetrimino{
      * @param cw Bool que indica si se gira en el sentido de las agujas del reloj (cw: clockwise) o en el contrario (ccw: counter-clockwise)
      * @returns True/False dependiendo de si se produce un kick o no (t-spin)
      */
-    rotate(cw: boolean): boolean{
-        let factor = cw ? 1 : -1
-        let strcw = cw ? 1 : 0
+    rotate(rot: string): boolean{
+        let factor = (rot === "cw") ? -1 : 1
 
-        this.orient = factor + 4
+        this.orient += - factor + 4
         this.orient %= 4
 
         this.minos.forEach(mino => {
             [mino[0], mino[1]] = [this.x - factor * (mino[1] - this.y), this.y + factor * (mino[0] - this.x)]
         });
-
-        // TODO: Kicks (mas adelante)
             
         return false;
     }

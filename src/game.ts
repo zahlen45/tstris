@@ -53,19 +53,19 @@ export class Game{
         if(event.code === "Space") this.Hold_piece()
 
         if(event.key === "a"){
-            var [rot, kick_test] = this.CheckRotation(true)
-            var kick = kicks[this.current_piece.type][1][this.current_piece.orient][kick_test]
+            var [rot, kick_test] = this.CheckRotation("ccw")
+            var kick = kicks[this.current_piece.type]["ccw"][this.current_piece.orient][kick_test]
             if(rot){
                 this.current_piece.move(kick[0], kick[1])
-                this.current_piece.rotate(true)
+                this.current_piece.rotate("ccw")
             }
         }
         if(event.key === "d"){
-            var [rot, kick_test] = this.CheckRotation(false)
-            var kick = kicks[this.current_piece.type][0][this.current_piece.orient][kick_test]
+            var [rot, kick_test] = this.CheckRotation("cw")
+            var kick = kicks[this.current_piece.type]["cw"][this.current_piece.orient][kick_test]
             if(rot){
                 this.current_piece.move(kick[0], kick[1])
-                this.current_piece.rotate(false)
+                this.current_piece.rotate("cw")
             }
         }
 
@@ -173,48 +173,41 @@ export class Game{
         this.current_piece.minos.forEach(mino => {           
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
-
-            let check_border = (new_x < 0 || new_x > 10 || new_y < 0)            
             
-            if(check_border || (this.board[new_y][new_x] !== "")){
-                result = false
-            }
+            result = result && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
         });
         return result
     }
 
-    CheckRotation(cw: boolean): [boolean, number]{
-        let factor = cw ? 1 : -1
-        let strcw = cw ? 1 : 0
-        var result = true
+    CheckRotation(rot: string): [boolean, number]{
+        let factor = (rot === "cw") ? -1 : 1
 
         var test_pass = (this.current_piece.type === "O")
         var test = 0;
         
-        while(!test_pass && test < 5){ 
-            var kick = kicks[this.current_piece.type][strcw][this.current_piece.orient][test]
+        while(!test_pass && test < 5){
+            var partial_test = true
+            var kick = kicks[this.current_piece.type][rot][this.current_piece.orient][test]
 
             this.current_piece.minos.forEach(mino => {
                 var new_x = kick[0] + this.current_piece.x - factor * (mino[1] - this.current_piece.y)
-                var new_y = kick[1] + this.current_piece.y + factor * (mino[0] - this.current_piece.x)            
-    
-                let check_border = (new_x < 0 || new_x > 10 || new_y < 0)
+                var new_y = kick[1] + this.current_piece.y + factor * (mino[0] - this.current_piece.x)
                 
-                if(check_border || (this.board[new_y][new_x] !== "")){
-                    result = false
-                }
+                partial_test = partial_test && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
             });
 
-            if(result){
-                test_pass = true
-            }else{
-                test++
-            }
+            if(partial_test){ test_pass = true } else { test++ }
         }
-
-        console.log(test);
         
-        return [result, test]
+        return [test_pass, test]
+    }
+
+    CheckBorders(pos: [number, number]): boolean{
+        return !(pos[0] < 0 || pos[0] > 9 || pos[1] < 0)
+    }
+
+    CheckBoard(pos: [number, number]): boolean{
+        return this.board[pos[1]][pos[0]] === ""
     }
 
     /**
@@ -377,6 +370,14 @@ export class Game{
             ctx!.fillStyle = colors[this.current_piece.type]               
             ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
         });
+
+        this.Draw_center()
+    }
+
+    Draw_center(){
+        var ctx = canvas.getContext('2d')
+        ctx!.fillStyle = 'white'
+        ctx!.fillRect(30 * this.current_piece.x + 5, 600 - 30 * (this.current_piece.y + 1) + 5, 20, 20)
     }
 
     /**

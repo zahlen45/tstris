@@ -43,6 +43,14 @@ problemas:
 	// operacion: (-pos(y) + center(y) + center(x), pos(x) - center(x) + center(y))
 	}
 
+	cw:
+		x = cx - (y - cy)
+		y = cy + (x - cx)
+
+	ccw:
+		x = cx + (y - cy)
+		y = cy - (x - cx)
+
 	para ccw es igual pero con la matriz de ccw
 
 - hard drop

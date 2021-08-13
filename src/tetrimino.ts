@@ -1,9 +1,10 @@
 import { pieces, spawn_pos, spawn_dir } from "./constants"
 
 export class Tetrimino{
-    type: string = ''    // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
+    type: string = ""    // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
     x: number = 0
     y: number = 0
+    orient: number = 0
     minos: Array<number[]> = []
 
     prev_x: number = 0
@@ -53,11 +54,16 @@ export class Tetrimino{
      * @returns True/False dependiendo de si se produce un kick o no (t-spin)
      */
     rotate(cw: boolean): boolean{
+        let factor = (cw) ? 1 : -1
 
-        //norm_pos = pos - center
-        //norm_rot_pos = (-norm_pos(y), norm_pos(x)) // CW * pos
-        //rot_pos = norm_rot_pos + center
-        // operacion: (-pos(y) + center(y) + center(x), pos(x) - center(x) + center(y))
+        this.orient += factor
+        this.orient %= 4
+
+        this.minos.forEach(mino => {
+            [mino[0], mino[1]] = [this.x - factor * (mino[1] - this.y), this.y + factor * (mino[0] - this.x)]
+        });
+
+        // TODO: Kicks (mas adelante)
             
         return false;
     }

@@ -49,6 +49,9 @@ export class Game{
         if(event.key === "n") this.New_piece()
         if(event.code === "Space") this.Hold_piece()
 
+        if(event.key === "a" && this.CheckRotation(true)) this.current_piece.rotate(true)
+        if(event.key === "d" && this.CheckRotation(false)) this.current_piece.rotate(false)
+
         var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
 
         if(pos !== -1){
@@ -131,6 +134,27 @@ export class Game{
         this.current_piece.minos.forEach(mino => {
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
+
+            let check_border = (new_x < 1 || new_x > 11 || new_y < 1)
+            
+            if(check_border || (this.board[new_y][new_x] !== "")){
+                result = false
+            }
+        });
+        return result
+    }
+
+    CheckRotation(cw: boolean): boolean{
+        let factor = (cw) ? 1 : -1
+        var result = true
+
+        this.current_piece.minos.forEach(mino => {
+            var new_x = this.current_piece.x - factor * (mino[1] - this.current_piece.y)
+            var new_y = this.current_piece.y + factor * (mino[0] - this.current_piece.x)
+            
+            console.log(mino)
+            console.log([new_x, new_y]);
+            
 
             let check_border = (new_x < 1 || new_x > 11 || new_y < 1)
             

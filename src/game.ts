@@ -54,34 +54,57 @@ export class Game{
 
         var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
 
-        if(pos !== -1){
-            const key_canvas = document.getElementById('key-canvas') as HTMLCanvasElement
+        switch(pos){
+            case 0:
+                // TODO: Hard drop
+                break;
+            case 1:
+                // TODO: Soft drop
+                break;
+            case 2:
+                if(this.CheckPosition([-1, 0])) this.current_piece.move(-1, 0)
+                break;
+            case 3:
+                if(this.CheckPosition([1, 0])) this.current_piece.move(1, 0)
+                break;
+            default:
+                // No es ninguna flecha
+                break;
+        }
+    }
 
-            var ctx = key_canvas.getContext('2d')
-            if(ctx !== null){
-                ctx.fillStyle = 'red'
+    /**
+     * Funcion que dibujaba la flecha que se presionaba (obsoleto?)
+     * @param key Tecla que se presiona
+     * @param down Si es 'keydown' o 'keyup'
+     */
+    PrintKeyPress(key: string, down: boolean){
+        const key_canvas = document.getElementById('key-canvas') as HTMLCanvasElement
 
-                let x = 0, y = 0;
+        var ctx = key_canvas.getContext('2d')
+        if(ctx !== null){
+            ctx.fillStyle = 'red'
 
-                switch (key){
-                    case "ArrowUp":
-                        x = 50, y = 0
-                        break;
-                    case "ArrowDown":
-                        x = 50, y = 50
-                        break;
-                    case "ArrowRight":
-                        x = 100, y = 50
-                        break;
-                    case "ArrowLeft":
-                        x = 0, y = 50
-                        break;
-                    default:
-                        break
-                }
+            let x = 0, y = 0;
 
-                (down) ? ctx.fillRect(x, y, 50, 50) : ctx.clearRect(x, y, 50, 50)
+            switch (key){
+                case "ArrowUp":
+                    x = 50, y = 0
+                    break;
+                case "ArrowDown":
+                    x = 50, y = 50
+                    break;
+                case "ArrowRight":
+                    x = 100, y = 50
+                    break;
+                case "ArrowLeft":
+                    x = 0, y = 50
+                    break;
+                default:
+                    break
             }
+
+            (down) ? ctx.fillRect(x, y, 50, 50) : ctx.clearRect(x, y, 50, 50)
         }
     }
 

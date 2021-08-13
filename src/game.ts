@@ -12,6 +12,7 @@ export class Game{
     queue: string[] = []
     bag: string[] = pieces.slice()
     current_piece!: Tetrimino;
+    ghost!: Tetrimino;
     next_drop: number = 500
     time_drop: number = 0
     last_drop: number;
@@ -56,7 +57,7 @@ export class Game{
 
         switch(pos){
             case 0:
-                // TODO: Hard drop
+                this.Hard_drop()
                 break;
             case 1:
                 if(this.CheckPosition([0, -1])) this.current_piece.move(0, -1)
@@ -118,12 +119,13 @@ export class Game{
 
         // Caida por gravedad
         if(this.time_drop >= this.next_drop){
+            console.log(this.current_piece.minos);
+            
             if(this.CheckPosition([0, -1])){
                 this.current_piece.move(0, -1)
                 this.last_drop = Date.now()
             }else{
                 this.FixPiece()
-                this.New_piece()
             }
         }
 
@@ -155,10 +157,12 @@ export class Game{
 
         // Muy mejorable
         this.current_piece.minos.forEach(mino => {
+            console.log([mino[0], mino[1]]);
+            
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
 
-            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)
+            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)            
             
             if(check_border || (this.board[new_y][new_x] !== "")){
                 result = false
@@ -193,6 +197,7 @@ export class Game{
         });
         
         this.ClearLine()
+        this.New_piece()
     }
 
     /**
@@ -200,19 +205,40 @@ export class Game{
      * Es posible que en un futuro devuelva el numero de lineas y si hay t-spin o all-clear
      */
     ClearLine(){
-        var lineas = []
         for (let i = 0; i < 21; i++) {
             if(!this.board[i].some(c => c === "")){
-                lineas.push(i)
+                this.board.splice(i, 1)
+                this.board.push(Array(10).fill(""))
+            }
+        }
+    }
+
+    /**
+     * Calcula y realiza un hard drop
+     */
+    Hard_drop(){
+        // Mejorable
+        let min_height = Math.floor(this.current_piece.y)
+        var height = min_height
+        var drop = false
+
+        while (!drop && height > 0){
+            if(this.CheckPosition([0, - height])){
+                drop = true
+                this.current_piece.move(0, - height)
+            } else {
+                height--
             }
         }
 
-        let new_line = Array(10).fill("")
+        this.FixPiece()
+    }
 
-        lineas.forEach(index => {
-            this.board.splice(index, 1)
-            this.board.push(new_line)
-        });
+    /**
+     * Dibuja la pieza fantasma para el hard drop (?)
+     */
+    Ghost_piece(){
+        // TODO
     }
 
     /**

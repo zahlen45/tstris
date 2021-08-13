@@ -1,4 +1,4 @@
-import { pieces, spawn_pos, spawn_dir } from "./constants"
+import { pieces, spawn_pos, spawn_dir, kicks } from "./constants"
 
 export class Tetrimino{
     type: string = ""    // Guarda el tipo de pieza que es (I, J, L, O, S, Z, T)
@@ -54,9 +54,10 @@ export class Tetrimino{
      * @returns True/False dependiendo de si se produce un kick o no (t-spin)
      */
     rotate(cw: boolean): boolean{
-        let factor = (cw) ? 1 : -1
+        let factor = cw ? 1 : -1
+        let strcw = cw ? 1 : 0
 
-        this.orient += factor
+        this.orient = factor + 4
         this.orient %= 4
 
         this.minos.forEach(mino => {

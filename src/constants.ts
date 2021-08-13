@@ -44,5 +44,43 @@ export const config: { [opt: string]: any } = {
 // TODO: Controles
 export const keybinds: { [key: string]: any } = {}
 
-// TODO: Buscar las tablas de kicks y codificarlas
-export const kicks: any = 0;
+const jlstz_kicks: { [rot: number]: { [orient: number]: Array<[number, number]> }} = {
+    1: {
+        0: [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]],
+        1: [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]],
+        2: [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]],
+        3: [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]],
+    },
+
+    0: {
+        0: [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]],
+        1: [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]],
+        2: [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]],
+        3: [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]],
+    },
+}
+    
+const i_kicks: { [rot: number]: { [orient: number]: Array<[number, number]> }} = {
+    1: {
+        0: [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]],
+        1: [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]],
+        2: [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]],
+        3: [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]],
+    },
+
+    0: {
+        0: [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]],
+        1: [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]],
+        2: [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]],
+        3: [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]],
+    },
+}
+
+export const kicks: { [piece: string]: { [rot:string]: { [orient: number]: Array<[number, number]> }}} = {
+    "I" : i_kicks,
+    "J" : jlstz_kicks,
+    "L" : jlstz_kicks,
+    "S" : jlstz_kicks,
+    "Z" : jlstz_kicks,
+    "T" : jlstz_kicks,
+}

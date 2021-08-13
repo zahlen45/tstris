@@ -1,4 +1,4 @@
-import { config, pieces, colors, canvas } from "./constants"
+import { config, pieces, colors, canvas, kicks } from "./constants"
 import { Tetrimino } from "./tetrimino"
 
 export class Game{
@@ -40,6 +40,8 @@ export class Game{
 
         this.last_drop = Date.now()
 
+        console.log(kicks);
+
         // Al final de todo
         this.Update()
     }
@@ -50,8 +52,22 @@ export class Game{
         if(event.key === "n") this.New_piece()
         if(event.code === "Space") this.Hold_piece()
 
-        if(event.key === "a" && this.CheckRotation(true)) this.current_piece.rotate(true)
-        if(event.key === "d" && this.CheckRotation(false)) this.current_piece.rotate(false)
+        if(event.key === "a"){
+            var [rot, kick_test] = this.CheckRotation(true)
+            var kick = kicks[this.current_piece.type][1][this.current_piece.orient][kick_test]
+            if(rot){
+                this.current_piece.move(kick[0], kick[1])
+                this.current_piece.rotate(true)
+            }
+        }
+        if(event.key === "d"){
+            var [rot, kick_test] = this.CheckRotation(false)
+            var kick = kicks[this.current_piece.type][0][this.current_piece.orient][kick_test]
+            if(rot){
+                this.current_piece.move(kick[0], kick[1])
+                this.current_piece.rotate(false)
+            }
+        }
 
         var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
 
@@ -118,9 +134,7 @@ export class Game{
         [this._lastTimestamp, this.time_drop]  = [Date.now(), Date.now() - this.last_drop]
 
         // Caida por gravedad
-        if(this.time_drop >= this.next_drop){
-            console.log(this.current_piece.minos);
-            
+        if(this.time_drop >= this.next_drop){ 
             if(this.CheckPosition([0, -1])){
                 this.current_piece.move(0, -1)
                 this.last_drop = Date.now()
@@ -156,13 +170,11 @@ export class Game{
         var result = true
 
         // Muy mejorable
-        this.current_piece.minos.forEach(mino => {
-            console.log([mino[0], mino[1]]);
-            
+        this.current_piece.minos.forEach(mino => {           
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
 
-            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)            
+            let check_border = (new_x < 0 || new_x > 10 || new_y < 0)            
             
             if(check_border || (this.board[new_y][new_x] !== "")){
                 result = false
@@ -171,21 +183,38 @@ export class Game{
         return result
     }
 
-    CheckRotation(cw: boolean): boolean{
-        let factor = (cw) ? 1 : -1
+    CheckRotation(cw: boolean): [boolean, number]{
+        let factor = cw ? 1 : -1
+        let strcw = cw ? 1 : 0
         var result = true
 
-        this.current_piece.minos.forEach(mino => {
-            var new_x = this.current_piece.x - factor * (mino[1] - this.current_piece.y)
-            var new_y = this.current_piece.y + factor * (mino[0] - this.current_piece.x)            
+        var test_pass = (this.current_piece.type === "O")
+        var test = 0;
+        
+        while(!test_pass && test < 5){ 
+            var kick = kicks[this.current_piece.type][strcw][this.current_piece.orient][test]
 
-            let check_border = (new_x < 0 || new_x > 10 || new_y < 1)
-            
-            if(check_border || (this.board[new_y][new_x] !== "")){
-                result = false
+            this.current_piece.minos.forEach(mino => {
+                var new_x = kick[0] + this.current_piece.x - factor * (mino[1] - this.current_piece.y)
+                var new_y = kick[1] + this.current_piece.y + factor * (mino[0] - this.current_piece.x)            
+    
+                let check_border = (new_x < 0 || new_x > 10 || new_y < 0)
+                
+                if(check_border || (this.board[new_y][new_x] !== "")){
+                    result = false
+                }
+            });
+
+            if(result){
+                test_pass = true
+            }else{
+                test++
             }
-        });
-        return result
+        }
+
+        console.log(test);
+        
+        return [result, test]
     }
 
     /**
@@ -198,6 +227,8 @@ export class Game{
         
         this.ClearLine()
         this.New_piece()
+
+        console.log(this.board);
     }
 
     /**
@@ -218,7 +249,7 @@ export class Game{
      */
     Hard_drop(){
         // Mejorable
-        let min_height = Math.floor(this.current_piece.y)
+        let min_height = Math.ceil(this.current_piece.y)
         var height = min_height
         var drop = false
 
@@ -330,7 +361,7 @@ export class Game{
                 if(this.board[i][j] !== ""){
                     var ctx = canvas.getContext('2d')
                     ctx!.fillStyle = colors[this.board[i][j]]
-                    ctx!.fillRect(30 * j, 600 - 30 * i, 30, 30)
+                    ctx!.fillRect(30 * j, 600 - 30 * (i + 1), 30, 30)
                 }
             }
         }
@@ -344,7 +375,7 @@ export class Game{
 
         this.current_piece.minos.forEach(mino => {
             ctx!.fillStyle = colors[this.current_piece.type]               
-            ctx!.fillRect(30 * mino[0], 600 - 30 * mino[1], 30, 30)
+            ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
         });
     }
 

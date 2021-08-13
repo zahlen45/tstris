@@ -200,7 +200,19 @@ export class Game{
      * Es posible que en un futuro devuelva el numero de lineas y si hay t-spin o all-clear
      */
     ClearLine(){
-        
+        var lineas = []
+        for (let i = 0; i < 21; i++) {
+            if(!this.board[i].some(c => c === "")){
+                lineas.push(i)
+            }
+        }
+
+        let new_line = Array(10).fill("")
+
+        lineas.forEach(index => {
+            this.board.splice(index, 1)
+            this.board.push(new_line)
+        });
     }
 
     /**

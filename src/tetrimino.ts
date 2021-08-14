@@ -7,6 +7,7 @@ export class Tetrimino{
     orient: number = 0
     minos: Array<number[]> = []
     pre_minos: Array<number[]> = []
+    ghost_minos: Array<number[]> = []
 
     constructor(type: string){
         // Comprueba que el tipo esta bien puesto
@@ -62,5 +63,18 @@ export class Tetrimino{
         });
             
         return false;
+    }
+
+    set_ghost(y: number){
+        var new_ghost: Array<number[]> = []
+        
+        this.minos.forEach(mino => {
+            var new_mino: number[] = []
+            new_mino[0] = mino[0]
+            new_mino[1] = mino[1] + y
+            new_ghost.push(new_mino)
+        });
+
+        this.ghost_minos = new_ghost
     }
 }

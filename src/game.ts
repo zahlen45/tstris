@@ -12,7 +12,6 @@ export class Game{
     queue: string[] = []
     bag: string[] = pieces.slice()
     current_piece!: Tetrimino;
-    ghost!: Tetrimino;
     next_drop: number = 500
     time_drop: number = 0
     last_drop: number;
@@ -82,7 +81,7 @@ export class Game{
                 if(this.CheckPosition([-1, 0])) this.current_piece.move(-1, 0)
                 break;
             case 3:
-                if(this.CheckPosition([1, 0])) this.current_piece.move(1, 0)
+                if(this.CheckPosition([1, 0])) this.current_piece.move(1, 0) 
                 break;
             default:
                 // No es ninguna flecha
@@ -156,6 +155,8 @@ export class Game{
 
         this.Draw_guides()
         this.Draw_board()
+
+        this.Draw_ghost_piece()
         this.Draw_current_piece()
     }
 
@@ -255,7 +256,7 @@ export class Game{
         var height = 1
         var drop = false
 
-        while (!drop && height > 0){
+        while (!drop){
             if(!this.CheckPosition([0, - height])){
                 drop = true
                 this.current_piece.move(0, - height + 1)
@@ -265,13 +266,6 @@ export class Game{
         }
 
         this.FixPiece()
-    }
-
-    /**
-     * Dibuja la pieza fantasma para el hard drop (?)
-     */
-    Ghost_piece(){
-        // TODO
     }
 
     /**
@@ -380,13 +374,38 @@ export class Game{
             ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
         });
 
-        this.Draw_center()
+        // this.Draw_center() // Solo para debug
     }
 
     Draw_center(){
         var ctx = canvas.getContext('2d')
         ctx!.fillStyle = 'white'
         ctx!.fillRect(30 * this.current_piece.x + 5, 600 - 30 * (this.current_piece.y + 1) + 5, 20, 20)
+    }
+
+    /**
+     * Dibuja la pieza fantasma para el hard drop (?)
+     */
+    Draw_ghost_piece(){
+        var height = 1
+        var drop = false
+
+        while (!drop){
+            if(!this.CheckPosition([0, - height])){
+                drop = true
+                
+                this.current_piece.set_ghost(- height + 1)
+
+                var ctx = canvas.getContext('2d')
+
+                this.current_piece.ghost_minos.forEach(mino => {
+                    ctx!.fillStyle = 'grey'             
+                    ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
+                });
+            } else {
+                height++
+            }
+        }
     }
 
     /**

@@ -1,4 +1,7 @@
-import { config, pieces, colors, canvas, kicks } from "./constants"
+import { config, pieces, colors,
+        boardCanvas, heldCanvas, queueCanvas,
+        kicks, spawn_dir } from "./constants"
+
 import { Tetrimino } from "./tetrimino"
 
 export class Game{
@@ -48,8 +51,12 @@ export class Game{
     KeyEvents(event: KeyboardEvent, down: boolean): void{
         var key = event.key;
 
-        if(event.key === "n") this.NewPiece()
-        if(event.code === "Space") this.HoldPiece()
+        // if(event.key === "n") this.NewPiece() // Solo para debug
+
+        if(event.code === "Space") { 
+            this.HoldPiece()
+            this.DrawHeldPiece()
+        }
 
         if(event.key === "a"){
             var [rot, kick_test] = this.CheckRotation("ccw")
@@ -151,12 +158,12 @@ export class Game{
      * Funcion que se encarga de dibujar todos los graficos
      */
     Render(){
-        this.Clear_canvas()
+        this.ClearCanvas()
 
-        this.Draw_guides()
+        this.DrawGuides()
         this.DrawBoard()
 
-        this.Draw_ghost_piece()
+        this.DrawGhostPiece()
         this.DrawActualPiece()
     }
 
@@ -237,15 +244,6 @@ export class Game{
         let new_rows = 40 - this.board.length
         let arr = Array(new_rows).fill(Array(10).fill(""))
         this.board.push(arr)
-
-        /*
-        for (let i = 0; i < 21; i++) {
-          if(!this.board[i].some(c => c === "")){
-                this.board.splice(i, 1)
-                this.board.push(Array(10).fill(""))
-            }
-        }
-        */
     }
 
     /**
@@ -321,14 +319,13 @@ export class Game{
                 this.heldPiece = this.actualPiece.type
 
                 this.SpawnPiece()
-            }else{
+            } else {
                 var temp = this.actualPiece.type
 
                 this.actualPiece = new Tetrimino(this.heldPiece)
                 this.heldPiece = temp
             }
         }
-        console.log(this.heldPiece) // Pasaba 2 veces: una para up y otra para down
     }
 
     /**
@@ -355,7 +352,7 @@ export class Game{
         for (let i = 0; i < 20; i++) {
             for (let j = 0; j < 10; j++) {
                 if(this.board[i][j] !== ""){
-                    var ctx = canvas.getContext('2d')
+                    var ctx = boardCanvas.getContext('2d')
                     ctx!.fillStyle = colors[this.board[i][j]]
                     ctx!.fillRect(30 * j, 600 - 30 * (i + 1), 30, 30)
                 }
@@ -367,7 +364,7 @@ export class Game{
      * Dibuja el tetrimino actual
      */
     DrawActualPiece(){
-        var ctx = canvas.getContext('2d')
+        var ctx = boardCanvas.getContext('2d')
 
         this.actualPiece.minos.forEach(mino => {
             ctx!.fillStyle = colors[this.actualPiece.type]               
@@ -380,8 +377,8 @@ export class Game{
     /**
      * Dibuja el centro de la pieza actual. Solo para debug
      */
-    Draw_center(){
-        var ctx = canvas.getContext('2d')
+    DrawCenter(){
+        var ctx = boardCanvas.getContext('2d')
         ctx!.fillStyle = 'white'
         ctx!.fillRect(30 * this.actualPiece.x + 5, 600 - 30 * (this.actualPiece.y + 1) + 5, 20, 20)
     }
@@ -389,7 +386,7 @@ export class Game{
     /**
      * Dibuja la pieza fantasma para el hard drop (?)
      */
-    Draw_ghost_piece(){
+    DrawGhostPiece(){
         var height = 1
         var drop = false
 
@@ -399,7 +396,7 @@ export class Game{
                 
                 this.actualPiece.SetGhost(- height + 1)
 
-                var ctx = canvas.getContext('2d')
+                var ctx = boardCanvas.getContext('2d')
 
                 this.actualPiece.ghostMinos.forEach(mino => {
                     ctx!.fillStyle = 'grey'             
@@ -422,27 +419,40 @@ export class Game{
      * Dibuja la pieza guardada
      */
     DrawHeldPiece(){
-        // TODO
+        var ctx = heldCanvas.getContext('2d')
+        ctx!.clearRect(0, 0, heldCanvas.width, heldCanvas.height)
+
+        let x: number = 70
+        let y: number = 70
+
+        let size: number = 25
+
+        console.log(this.heldPiece);
+        
+        spawn_dir[this.heldPiece].forEach(center => {
+            ctx!.fillStyle = colors[this.heldPiece]               
+            ctx!.fillRect(size * center[0] + x, - size * center[1] + y, size, size)
+        });
     }
 
     /**
      * Limpia el canvas para renderizar una nueva frame
      */
-    Clear_canvas(){
-        var ctx = canvas.getContext('2d')
-        ctx?.clearRect(0, 0, canvas.width, canvas.height)
+    ClearCanvas(){
+        var ctx = boardCanvas.getContext('2d')
+        ctx!.clearRect(0, 0, boardCanvas.width, boardCanvas.height)
     }
 
     /**
      * Dibuja las guias del tablero
      */
-    Draw_guides(){
+    DrawGuides(){
         // Se establece el tamaño del canvas
         let board_size: [number, number] = [10 * config["square-length"], 20 * config["square-length"]]
-        canvas?.setAttribute("width", board_size[0].toString())
-        canvas?.setAttribute("height", board_size[1].toString())
+        boardCanvas?.setAttribute("width", board_size[0].toString())
+        boardCanvas?.setAttribute("height", board_size[1].toString())
 
-        var ctx = canvas.getContext('2d')
+        var ctx = boardCanvas.getContext('2d')
         if(ctx != null){
             ctx.strokeStyle = 'grey'
             ctx.lineWidth = 1

@@ -34,7 +34,9 @@ export const spawn_dir: { [piece: string] : Array<number[]> } = {
     "T" : [[-1, 0], [0, 0], [0, 1], [1, 0]],
 }
 
-export const canvas: HTMLCanvasElement = document.getElementById('board') as HTMLCanvasElement
+export const boardCanvas: HTMLCanvasElement = document.getElementById('board') as HTMLCanvasElement
+export const heldCanvas: HTMLCanvasElement = document.getElementById('hold-canvas') as HTMLCanvasElement
+export const queueCanvas: HTMLCanvasElement = document.getElementById('queue-canvas') as HTMLCanvasElement
 
 export const config: { [opt: string]: any } = {
     "square-length": 30,

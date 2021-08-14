@@ -6,15 +6,15 @@ export class Game{
 
     private delta: number
 
-    held_piece: string = ""
+    heldPiece: string = ""
     held: boolean = false
 
     queue: string[] = []
     bag: string[] = pieces.slice()
-    current_piece!: Tetrimino;
-    next_drop: number = 500
-    time_drop: number = 0
-    last_drop: number;
+    actualPiece!: Tetrimino;
+    nextDrop: number = 500
+    timeDrop: number = 0
+    lastDrop: number;
 
     board: string[][] = []   // Puede que la pieza que sea me sirva para colorear luego (?)
     
@@ -29,15 +29,15 @@ export class Game{
 
         this.delta = 1000/config['fps']
 
-        this.New_board()
+        this.NewBoard()
 
-        this.New_bag()
-        this.First_queue()
-        this.Spawn_piece()
+        this.NewBag()
+        this.FirstQueue()
+        this.SpawnPiece()
 
         document.addEventListener('keydown', (event) => this.KeyEvents(event, true))
 
-        this.last_drop = Date.now()
+        this.lastDrop = Date.now()
 
         console.log(kicks);
 
@@ -48,23 +48,23 @@ export class Game{
     KeyEvents(event: KeyboardEvent, down: boolean): void{
         var key = event.key;
 
-        if(event.key === "n") this.New_piece()
-        if(event.code === "Space") this.Hold_piece()
+        if(event.key === "n") this.NewPiece()
+        if(event.code === "Space") this.HoldPiece()
 
         if(event.key === "a"){
             var [rot, kick_test] = this.CheckRotation("ccw")
-            var kick = kicks[this.current_piece.type]["ccw"][this.current_piece.orient][kick_test]
+            var kick = kicks[this.actualPiece.type]["ccw"][this.actualPiece.orient][kick_test]
             if(rot){
-                this.current_piece.move(kick[0], kick[1])
-                this.current_piece.rotate("ccw")
+                this.actualPiece.Move(kick[0], kick[1])
+                this.actualPiece.Rotate("ccw")
             }
         }
         if(event.key === "d"){
             var [rot, kick_test] = this.CheckRotation("cw")
-            var kick = kicks[this.current_piece.type]["cw"][this.current_piece.orient][kick_test]
+            var kick = kicks[this.actualPiece.type]["cw"][this.actualPiece.orient][kick_test]
             if(rot){
-                this.current_piece.move(kick[0], kick[1])
-                this.current_piece.rotate("cw")
+                this.actualPiece.Move(kick[0], kick[1])
+                this.actualPiece.Rotate("cw")
             }
         }
 
@@ -72,16 +72,16 @@ export class Game{
 
         switch(pos){
             case 0:
-                this.Hard_drop()
+                this.HardDrop()
                 break;
             case 1:
-                if(this.CheckPosition([0, -1])) this.current_piece.move(0, -1)
+                if(this.CheckPosition([0, -1])) this.actualPiece.Move(0, -1)
                 break;
             case 2:
-                if(this.CheckPosition([-1, 0])) this.current_piece.move(-1, 0)
+                if(this.CheckPosition([-1, 0])) this.actualPiece.Move(-1, 0)
                 break;
             case 3:
-                if(this.CheckPosition([1, 0])) this.current_piece.move(1, 0) 
+                if(this.CheckPosition([1, 0])) this.actualPiece.Move(1, 0) 
                 break;
             default:
                 // No es ninguna flecha
@@ -127,16 +127,16 @@ export class Game{
     /**
      * Game loop
      */
-    public Update(): void{
+    public Update(){
 
         // Guarda el ultimo momento por el que pasa aqui
-        [this._lastTimestamp, this.time_drop]  = [Date.now(), Date.now() - this.last_drop]
+        [this._lastTimestamp, this.timeDrop]  = [Date.now(), Date.now() - this.lastDrop]
 
         // Caida por gravedad
-        if(this.time_drop >= this.next_drop){ 
+        if(this.timeDrop >= this.nextDrop){ 
             if(this.CheckPosition([0, -1])){
-                this.current_piece.move(0, -1)
-                this.last_drop = Date.now()
+                this.actualPiece.Move(0, -1)
+                this.lastDrop = Date.now()
             }else{
                 this.FixPiece()
             }
@@ -154,10 +154,10 @@ export class Game{
         this.Clear_canvas()
 
         this.Draw_guides()
-        this.Draw_board()
+        this.DrawBoard()
 
         this.Draw_ghost_piece()
-        this.Draw_current_piece()
+        this.DrawActualPiece()
     }
 
     //#region Manejo de piezas
@@ -171,7 +171,7 @@ export class Game{
         var result = true
 
         // Muy mejorable
-        this.current_piece.minos.forEach(mino => {           
+        this.actualPiece.minos.forEach(mino => {           
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
             
@@ -183,16 +183,16 @@ export class Game{
     CheckRotation(rot: string): [boolean, number]{
         let factor = (rot === "cw") ? -1 : 1
 
-        var test_pass = (this.current_piece.type === "O")
+        var test_pass = (this.actualPiece.type === "O")
         var test = 0;
         
         while(!test_pass && test < 5){
             var partial_test = true
-            var kick = kicks[this.current_piece.type][rot][this.current_piece.orient][test]
+            var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][test]
 
-            this.current_piece.minos.forEach(mino => {
-                var new_x = kick[0] + this.current_piece.x - factor * (mino[1] - this.current_piece.y)
-                var new_y = kick[1] + this.current_piece.y + factor * (mino[0] - this.current_piece.x)
+            this.actualPiece.minos.forEach(mino => {
+                var new_x = kick[0] + this.actualPiece.x - factor * (mino[1] - this.actualPiece.y)
+                var new_y = kick[1] + this.actualPiece.y + factor * (mino[0] - this.actualPiece.x)
                 
                 partial_test = partial_test && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
             });
@@ -215,12 +215,12 @@ export class Game{
      * Fija el tetrimino actual en el tablero
      */
     FixPiece(){
-        this.current_piece.minos.forEach(mino => {
-            this.board[mino[1]][mino[0]] = this.current_piece.type
+        this.actualPiece.minos.forEach(mino => {
+            this.board[mino[1]][mino[0]] = this.actualPiece.type
         });
         
         this.ClearLines()
-        this.New_piece()
+        this.NewPiece()
 
         console.log(this.board);
     }
@@ -251,7 +251,7 @@ export class Game{
     /**
      * Calcula y realiza un hard drop
      */
-    Hard_drop(){
+    HardDrop(){
         // Mejorable
         var height = 1
         var drop = false
@@ -259,7 +259,7 @@ export class Game{
         while (!drop){
             if(!this.CheckPosition([0, - height])){
                 drop = true
-                this.current_piece.move(0, - height + 1)
+                this.actualPiece.Move(0, - height + 1)
             } else {
                 height++
             }
@@ -271,14 +271,14 @@ export class Game{
     /**
      * Establece la primera cola. Solo se llama al principio, en el constructor
      */
-    First_queue(){
+    FirstQueue(){
         this.queue = this.bag.splice(6, 1)
     }
 
     /** 
      * Coloca aleatoriamente las piezas del nuevo saco (usando la mezcla de Fisher-Yates (aka Knuth))
      */
-    New_bag(){
+    NewBag(){
         this.bag = pieces.slice()
         var indActual = 7, indRand;
 
@@ -293,48 +293,48 @@ export class Game{
     /**
      * Saca la primera pieza de la cola y mete la primera de la bolsa a la cola
      */
-    Spawn_piece(){
+    SpawnPiece(){
         // Si el saco esta vacio, lo rellena
-        if(this.bag.length == 0) this.New_bag()
+        if(this.bag.length == 0) this.NewBag()
 
         this.queue.push(this.bag[0])
-        this.current_piece = new Tetrimino(this.queue.shift()!)
+        this.actualPiece = new Tetrimino(this.queue.shift()!)
         this.bag.shift()
     }
 
     /**
      * Genera una nueva pieza y la añade a la cola. Tambien pone "held" a False
      */
-    New_piece(): void{
+    NewPiece(): void{
         this.held = false
-        this.Spawn_piece()
+        this.SpawnPiece()
     }
 
     /**
      * Guarda la pieza y la intercambia si hay una guardada
      */
-    Hold_piece(): void{
+    HoldPiece(): void{
         if(!this.held){
             this.held = true;
 
-            if(this.held_piece === "") {
-                this.held_piece = this.current_piece.type
+            if(this.heldPiece === "") {
+                this.heldPiece = this.actualPiece.type
 
-                this.Spawn_piece()
+                this.SpawnPiece()
             }else{
-                var temp = this.current_piece.type
+                var temp = this.actualPiece.type
 
-                this.current_piece = new Tetrimino(this.held_piece)
-                this.held_piece = temp
+                this.actualPiece = new Tetrimino(this.heldPiece)
+                this.heldPiece = temp
             }
         }
-        console.log(this.held_piece) // Pasaba 2 veces: una para up y otra para down
+        console.log(this.heldPiece) // Pasaba 2 veces: una para up y otra para down
     }
 
     /**
      * Genera un nuevo tablero
      */
-    New_board(){
+    NewBoard(){
         var row = Array<string>(10).fill("")
         for (let i = 0; i < 40; i++) {
             this.board.push(row.slice())
@@ -348,7 +348,7 @@ export class Game{
     /**
      * Dibuja el tablero
      */
-    Draw_board(){
+    DrawBoard(){
         // Nota: Al principio dibujare todo cada vez que renderice la animacion aunque no cambie nada
         // Intentare mejorarlo despues (capas?)
 
@@ -366,21 +366,24 @@ export class Game{
     /**
      * Dibuja el tetrimino actual
      */
-    Draw_current_piece(){
+    DrawActualPiece(){
         var ctx = canvas.getContext('2d')
 
-        this.current_piece.minos.forEach(mino => {
-            ctx!.fillStyle = colors[this.current_piece.type]               
+        this.actualPiece.minos.forEach(mino => {
+            ctx!.fillStyle = colors[this.actualPiece.type]               
             ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
         });
 
         // this.Draw_center() // Solo para debug
     }
 
+    /**
+     * Dibuja el centro de la pieza actual. Solo para debug
+     */
     Draw_center(){
         var ctx = canvas.getContext('2d')
         ctx!.fillStyle = 'white'
-        ctx!.fillRect(30 * this.current_piece.x + 5, 600 - 30 * (this.current_piece.y + 1) + 5, 20, 20)
+        ctx!.fillRect(30 * this.actualPiece.x + 5, 600 - 30 * (this.actualPiece.y + 1) + 5, 20, 20)
     }
 
     /**
@@ -394,11 +397,11 @@ export class Game{
             if(!this.CheckPosition([0, - height])){
                 drop = true
                 
-                this.current_piece.set_ghost(- height + 1)
+                this.actualPiece.SetGhost(- height + 1)
 
                 var ctx = canvas.getContext('2d')
 
-                this.current_piece.ghost_minos.forEach(mino => {
+                this.actualPiece.ghostMinos.forEach(mino => {
                     ctx!.fillStyle = 'grey'             
                     ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
                 });
@@ -406,6 +409,20 @@ export class Game{
                 height++
             }
         }
+    }
+
+    /**
+     * Dibuja la cola de piezas
+     */
+    DrawQueue(){
+        // TODO
+    }
+
+    /**
+     * Dibuja la pieza guardada
+     */
+    DrawHeldPiece(){
+        // TODO
     }
 
     /**

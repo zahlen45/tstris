@@ -6,8 +6,8 @@ export class Tetrimino{
     y: number = 0
     orient: number = 0
     minos: Array<number[]> = []
-    pre_minos: Array<number[]> = []
-    ghost_minos: Array<number[]> = []
+    preMinos: Array<number[]> = []
+    ghostMinos: Array<number[]> = []
 
     constructor(type: string){
         // Comprueba que el tipo esta bien puesto
@@ -18,13 +18,13 @@ export class Tetrimino{
             throw new Error("El tipo no coincide con ninguna pieza")
         }
 
-        this.spawn()
+        this.Spawn()
     }
 
     /**
      * Establece la posicion inicial de la pieza
      */
-    spawn(){
+    Spawn(){
         [this.x, this.y] = spawn_pos[this.type]
 
         spawn_dir[this.type].forEach(rel_mino => {
@@ -37,7 +37,7 @@ export class Tetrimino{
      * Metodo que mueve el centro del tetrimino
      * @param vect Vector de traslacion
      */
-    move(x: number, y: number): void{
+    Move(x: number, y: number): void{
         this.x += x
         this.y += y
 
@@ -52,7 +52,7 @@ export class Tetrimino{
      * @param cw Bool que indica si se gira en el sentido de las agujas del reloj (cw: clockwise) o en el contrario (ccw: counter-clockwise)
      * @returns True/False dependiendo de si se produce un kick o no (t-spin)
      */
-    rotate(rot: string): boolean{
+    Rotate(rot: string): boolean{
         let factor = (rot === "cw") ? -1 : 1
 
         this.orient += - factor + 4
@@ -65,9 +65,9 @@ export class Tetrimino{
         return false;
     }
 
-    set_ghost(y: number){
+    SetGhost(y: number){
         var new_ghost: Array<number[]> = []
-        
+
         this.minos.forEach(mino => {
             var new_mino: number[] = []
             new_mino[0] = mino[0]
@@ -75,6 +75,6 @@ export class Tetrimino{
             new_ghost.push(new_mino)
         });
 
-        this.ghost_minos = new_ghost
+        this.ghostMinos = new_ghost
     }
 }

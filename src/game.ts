@@ -252,16 +252,15 @@ export class Game{
      */
     Hard_drop(){
         // Mejorable
-        let min_height = Math.ceil(this.current_piece.y)
-        var height = min_height
+        var height = 1
         var drop = false
 
         while (!drop && height > 0){
-            if(this.CheckPosition([0, - height])){
+            if(!this.CheckPosition([0, - height])){
                 drop = true
-                this.current_piece.move(0, - height)
+                this.current_piece.move(0, - height + 1)
             } else {
-                height--
+                height++
             }
         }
 

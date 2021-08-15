@@ -1,6 +1,6 @@
 import { config, pieces, colors,
         boardCanvas, heldCanvas, queueCanvas,
-        kicks, spawn_dir } from "./constants"
+        kicks, spawn_dir, keydown } from "./constants"
 
 import { Tetrimino } from "./tetrimino"
 
@@ -18,6 +18,8 @@ export class Game{
     nextDrop: number = 500
     timeDrop: number = 0
     lastDrop: number;
+
+    keydown: boolean[] = Array(140).fill(false)
 
     board: string[][] = []
     
@@ -37,7 +39,9 @@ export class Game{
         this.SpawnPiece()
         this.DrawQueue()
 
-        document.addEventListener('keydown', (event) => this.KeyEvents(event, true))
+        document.addEventListener('keydown', (event) => this.KeyBindings(event))
+        document.addEventListener('keyup', (event) => this.KeyBindings(event))
+        // document.addEventListener('keyup', (event) => this.KeyBindingsUp(event))
 
         this.lastDrop = Date.now()
 
@@ -45,52 +49,78 @@ export class Game{
         this.Update()
     }
 
-    KeyEvents(event: KeyboardEvent, down: boolean): void{
+    /**
+     * Controla lo que se hace cuando se presiona una tecla
+     * @param event Evento que lo acciona
+     */
+    KeyBindings(event: KeyboardEvent): void{
         var key = event.key;
+        console.log(keydown);
+        console.log(event.key);
+        
+        keydown[key] = (event.type == 'keydown')
+        // if(event.key === "n") this.NewPiece() // Solo para depurar
 
-        // if(event.key === "n") this.NewPiece() // Solo para debug
-
+        /* 
         if(event.code === "Space") { 
             this.HoldPiece()
             this.DrawHeldPiece()
         }
 
-        if(event.key === "a"){
-            var [rot, kick_test] = this.CheckRotation("ccw")
-            var kick = kicks[this.actualPiece.type]["ccw"][this.actualPiece.orient][kick_test]
-            if(rot){
-                this.actualPiece.Move(kick[0], kick[1])
-                this.actualPiece.Rotate("ccw")
-            }
-        }
-        if(event.key === "d"){
-            var [rot, kick_test] = this.CheckRotation("cw")
-            var kick = kicks[this.actualPiece.type]["cw"][this.actualPiece.orient][kick_test]
-            if(rot){
-                this.actualPiece.Move(kick[0], kick[1])
-                this.actualPiece.Rotate("cw")
-            }
-        }
+        // var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
 
-        var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
-
-        switch(pos){
-            case 0:
+        switch(key){
+            case "ArrowUp":
                 this.HardDrop()
                 break;
-            case 1:
-                if(this.CheckPosition([0, -1])) this.actualPiece.Move(0, -1)
+            case "ArrowDown":
+                if(this.CheckPosition([0, -1]) && ) this.actualPiece.Move(0, -1)
                 break;
-            case 2:
+            case "ArrowLeft":
                 if(this.CheckPosition([-1, 0])) this.actualPiece.Move(-1, 0)
                 break;
-            case 3:
+            case "ArrowRight":
                 if(this.CheckPosition([1, 0])) this.actualPiece.Move(1, 0) 
                 break;
-            default:
-                // No es ninguna flecha
+            case "a":
+                if(!keydown["a"]){
+                    keydown["a"] = true
+                    this.RotatePiece("ccw")
+                }
                 break;
+            case "d":
+                if(!keydown["d"]){
+                    keydown["d"] = true
+                    this.RotatePiece("cw")
+                }
+                break;
+            default:
+                break;
+        } */
+    }
+
+    KeyBindingsUp(event: KeyboardEvent){
+        console.log(event.key);
+        
+        keydown[event.key] = false
+    }
+
+    KeyActions(){
+        // Hold
+        if(keydown["Space"]) { 
+            this.HoldPiece()
+            this.DrawHeldPiece()
         }
+
+        // Movement
+        if(keydown["ArrowUp"]) this.HardDrop()
+        if(keydown["ArrowDown"] && this.CheckPosition([0, -1])) this.actualPiece.Move(0, -1)
+        if(keydown["ArrowLeft"] && this.CheckPosition([-1, 0])) this.actualPiece.Move(-1, 0)
+        if(keydown["ArrowRight"] && this.CheckPosition([1, 0])) this.actualPiece.Move(1, 0)
+
+        // Rotations
+        if(keydown["a"]) this.RotatePiece("ccw")
+        if(keydown["d"]) this.RotatePiece("cw")
     }
 
     /**
@@ -146,6 +176,8 @@ export class Game{
             }
         }
 
+        this.KeyActions()
+
         this.Render()
 
         window.requestAnimationFrame(() => this.Update())
@@ -164,7 +196,7 @@ export class Game{
         this.DrawActualPiece()
     }
 
-    //#region Manejo de piezas
+    //#region Hitboxes
 
     /**
      * Comprueba si se puede hacer el movimiento de la pieza
@@ -173,46 +205,63 @@ export class Game{
      */
     CheckPosition(vect: number[]): boolean{
         var result = true
-
+    
         // Muy mejorable
         this.actualPiece.minos.forEach(mino => {           
             var new_x = mino[0] + vect[0]
             var new_y = mino[1] + vect[1]
-            
+                
             result = result && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
         });
         return result
     }
-
+    
     CheckRotation(rot: string): [boolean, number]{
         let factor = (rot === "cw") ? -1 : 1
-
+    
         var test_pass = (this.actualPiece.type === "O")
         var test = 0;
-        
+            
         while(!test_pass && test < 5){
             var partial_test = true
             var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][test]
-
+    
             this.actualPiece.minos.forEach(mino => {
                 var new_x = kick[0] + this.actualPiece.x - factor * (mino[1] - this.actualPiece.y)
                 var new_y = kick[1] + this.actualPiece.y + factor * (mino[0] - this.actualPiece.x)
-                
+                    
                 partial_test = partial_test && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
             });
 
             if(partial_test){ test_pass = true } else { test++ }
         }
-        
+            
         return [test_pass, test]
     }
-
+    
     CheckBorders(pos: [number, number]): boolean{
         return !(pos[0] < 0 || pos[0] > 9 || pos[1] < 0)
     }
-
+    
     CheckBoard(pos: [number, number]): boolean{
         return this.board[pos[1]][pos[0]] === ""
+    }
+
+    //#endregion
+
+    //#region Manejo de piezas
+
+    /**
+     * Intenta rotar la pieza actual
+     * @param rot "cw" o "ccw" dependiendo el sentido de la rotacion
+     */
+    RotatePiece(rot: string){
+        var [success, kick_test] = this.CheckRotation(rot)
+        var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][kick_test]
+        if(success){
+            this.actualPiece.Move(kick[0], kick[1])
+            this.actualPiece.Rotate(rot)
+        }
     }
 
     /**
@@ -314,7 +363,6 @@ export class Game{
 
             if(this.heldPiece === "") {
                 this.heldPiece = this.actualPiece.type
-
                 this.SpawnPiece()
             } else {
                 var temp = this.actualPiece.type

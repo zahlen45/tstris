@@ -4,6 +4,12 @@ export class tetrimino_defaults {
     
 }
 
+export var keydown: { [keycode: string]: boolean } = {
+    "a": false,
+    "s": false,
+    "d": false
+}
+
 export const colors: { [piece: string]: string } = {
     "I" : '#00FFF5',
     "J" : '#0011FF',

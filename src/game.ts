@@ -19,7 +19,7 @@ export class Game{
     timeDrop: number = 0
     lastDrop: number;
 
-    board: string[][] = []   // Puede que la pieza que sea me sirva para colorear luego (?)
+    board: string[][] = []
     
     constructor(){
         /*
@@ -28,8 +28,6 @@ export class Game{
         fps configurable (?)
         */
 
-        //this.Draw_board()
-
         this.delta = 1000/config['fps']
 
         this.NewBoard()
@@ -37,12 +35,11 @@ export class Game{
         this.NewBag()
         this.FirstQueue()
         this.SpawnPiece()
+        this.DrawQueue()
 
         document.addEventListener('keydown', (event) => this.KeyEvents(event, true))
 
         this.lastDrop = Date.now()
-
-        console.log(kicks);
 
         // Al final de todo
         this.Update()
@@ -228,8 +225,6 @@ export class Game{
         
         this.ClearLines()
         this.NewPiece()
-
-        console.log(this.board);
     }
 
     /**
@@ -270,7 +265,7 @@ export class Game{
      * Establece la primera cola. Solo se llama al principio, en el constructor
      */
     FirstQueue(){
-        this.queue = this.bag.splice(6, 1)
+        this.queue = this.bag.splice(0, 5)
     }
 
     /** 
@@ -298,6 +293,8 @@ export class Game{
         this.queue.push(this.bag[0])
         this.actualPiece = new Tetrimino(this.queue.shift()!)
         this.bag.shift()
+
+        this.DrawQueue()
     }
 
     /**
@@ -371,11 +368,11 @@ export class Game{
             ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
         });
 
-        // this.Draw_center() // Solo para debug
+        // this.Draw_center() // Solo para depurar
     }
 
     /**
-     * Dibuja el centro de la pieza actual. Solo para debug
+     * Dibuja el centro de la pieza actual. Solo para depurar
      */
     DrawCenter(){
         var ctx = boardCanvas.getContext('2d')
@@ -398,8 +395,8 @@ export class Game{
 
                 var ctx = boardCanvas.getContext('2d')
 
+                ctx!.fillStyle = 'grey'  
                 this.actualPiece.ghostMinos.forEach(mino => {
-                    ctx!.fillStyle = 'grey'             
                     ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30)
                 });
             } else {
@@ -412,7 +409,22 @@ export class Game{
      * Dibuja la cola de piezas
      */
     DrawQueue(){
-        // TODO
+        var ctx = queueCanvas.getContext('2d')
+        ctx!.clearRect(0, 0, queueCanvas.width, queueCanvas.height)
+
+        let x: number = 60
+        let y: number = 70
+
+        let size: number = 15
+
+        for (let i = 0; i < this.queue.length; i++) {
+            var piece = this.queue[i]
+
+            ctx!.fillStyle = colors[piece]
+            spawn_dir[piece].forEach(center => {
+                ctx!.fillRect(size * center[0] * 2 + x, - size * center[1] * 2 + y + 100 * i, size * 2, size * 2)
+            });
+        }
     }
 
     /**
@@ -422,16 +434,14 @@ export class Game{
         var ctx = heldCanvas.getContext('2d')
         ctx!.clearRect(0, 0, heldCanvas.width, heldCanvas.height)
 
-        let x: number = 70
+        let x: number = 60
         let y: number = 70
 
-        let size: number = 25
-
-        console.log(this.heldPiece);
+        let size: number = 15
         
-        spawn_dir[this.heldPiece].forEach(center => {
-            ctx!.fillStyle = colors[this.heldPiece]               
-            ctx!.fillRect(size * center[0] + x, - size * center[1] + y, size, size)
+        ctx!.fillStyle = colors[this.heldPiece] 
+        spawn_dir[this.heldPiece].forEach(center => {              
+            ctx!.fillRect(size * center[0] * 2 + x, - size * center[1] * 2 + y, size * 2, size * 2)
         });
     }
 

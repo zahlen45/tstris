@@ -5,10 +5,15 @@ export class tetrimino_defaults {
 }
 
 export var keydown: { [keycode: string]: boolean } = {
-    "a": false,
-    "s": false,
-    "d": false
+    "ArrowRight": false,
+    "ArrowLeft": false
 }
+
+export var keyhold: { [keycode: string]: boolean } = {
+
+}
+
+export const arr_keys: string[] = ["ArrowRight", "ArrowLeft"]
 
 export const colors: { [piece: string]: string } = {
     "I" : '#00FFF5',

@@ -1,6 +1,8 @@
 import { config, pieces, colors,
         boardCanvas, heldCanvas, queueCanvas,
-        kicks, spawn_dir, keydown } from "./constants"
+        kicks, spawn_dir, 
+        keydown,
+        arr_keys} from "./constants"
 
 import { Tetrimino } from "./tetrimino"
 
@@ -16,10 +18,15 @@ export class Game{
     bag: string[] = pieces.slice()
     actualPiece!: Tetrimino;
     nextDrop: number = 500
-    timeDrop: number = 0
     lastDrop: number;
 
-    keydown: boolean[] = Array(140).fill(false)
+    startTimerArr: number = 0
+    arr: number = 20;
+    arr_active: boolean = false
+
+    startTimerDas: number = 0
+    das: number = 120
+    das_active: boolean = false
 
     board: string[][] = []
     
@@ -54,11 +61,16 @@ export class Game{
      * @param event Evento que lo acciona
      */
     KeyBindings(event: KeyboardEvent): void{
-        var key = event.key;
-        console.log(keydown);
-        console.log(event.key);
-        
-        keydown[key] = (event.type == 'keydown')
+        let key = event.key
+        let down = (event.type === 'keydown')
+
+        // Pasa si no es una de las que no se repiten o si es de la que se repiten, si la tecla no se repite
+        if(!event.repeat) {
+            keydown[key] = down
+        }
+
+        //#region To be deleted
+
         // if(event.key === "n") this.NewPiece() // Solo para depurar
 
         /* 
@@ -97,30 +109,34 @@ export class Game{
             default:
                 break;
         } */
-    }
-
-    KeyBindingsUp(event: KeyboardEvent){
-        console.log(event.key);
-        
-        keydown[event.key] = false
+        //#endregion
     }
 
     KeyActions(){
         // Hold
-        if(keydown["Space"]) { 
+        if(keydown[" "]) { 
             this.HoldPiece()
             this.DrawHeldPiece()
         }
 
         // Movement
-        if(keydown["ArrowUp"]) this.HardDrop()
-        if(keydown["ArrowDown"] && this.CheckPosition([0, -1])) this.actualPiece.Move(0, -1)
-        if(keydown["ArrowLeft"] && this.CheckPosition([-1, 0])) this.actualPiece.Move(-1, 0)
-        if(keydown["ArrowRight"] && this.CheckPosition([1, 0])) this.actualPiece.Move(1, 0)
+        if(keydown["ArrowUp"]){
+            this.HardDrop()
+            keydown["ArrowUp"] = false
+        }
+        if(keydown["ArrowDown"]) { this.MovePiece([0, -1]) }
+        if(keydown["ArrowLeft"]) { this.MovePiece([-1, 0]) }
+        if(keydown["ArrowRight"]) { this.MovePiece([1, 0]) }
 
         // Rotations
-        if(keydown["a"]) this.RotatePiece("ccw")
-        if(keydown["d"]) this.RotatePiece("cw")
+        if(keydown["a"]) {
+            this.RotatePiece("ccw")
+            keydown["a"] = false
+        }
+        if(keydown["d"]){
+            this.RotatePiece("cw")
+            keydown["d"] = false
+        } 
     }
 
     /**
@@ -164,10 +180,12 @@ export class Game{
     public Update(){
 
         // Guarda el ultimo momento por el que pasa aqui
-        [this._lastTimestamp, this.timeDrop]  = [Date.now(), Date.now() - this.lastDrop]
+        this._lastTimestamp = Date.now()
+
+        var timeDrop = this._lastTimestamp - this.lastDrop  
 
         // Caida por gravedad
-        if(this.timeDrop >= this.nextDrop){ 
+        if(timeDrop >= this.nextDrop){ 
             if(this.CheckPosition([0, -1])){
                 this.actualPiece.Move(0, -1)
                 this.lastDrop = Date.now()
@@ -177,6 +195,29 @@ export class Game{
         }
 
         this.KeyActions()
+
+        // Si < || > y no esta das activo => activa el das y empieza el timer
+        if((keydown["ArrowLeft"] || keydown["ArrowRight"]) && !this.das_active){
+            console.log("start das");
+            this.das_active = true
+            this.startTimerDas = this._lastTimestamp
+        }
+
+        // Si !(< || >) entonces se resetea el das y el arr
+        if(!keydown["ArrowLeft"] && !keydown["ArrowRight"]){
+            console.log("stop das");
+            
+            this.das_active = false
+            this.arr_active = false
+        }
+
+        // Si el das esta activo y ha pasado mas tiempo que el das establecido, se activa el arr
+        if(this.das_active && !this.arr_active && this._lastTimestamp - this.startTimerDas > this.das) {
+            console.log("start arr");
+
+            this.arr_active = true
+            this.startTimerArr = this._lastTimestamp
+        }
 
         this.Render()
 
@@ -219,8 +260,8 @@ export class Game{
     CheckRotation(rot: string): [boolean, number]{
         let factor = (rot === "cw") ? -1 : 1
     
-        var test_pass = (this.actualPiece.type === "O")
-        var test = 0;
+        var test_pass = false
+        var test = (this.actualPiece.type === "O") ? 5 : 0;
             
         while(!test_pass && test < 5){
             var partial_test = true
@@ -252,15 +293,34 @@ export class Game{
     //#region Manejo de piezas
 
     /**
-     * Intenta rotar la pieza actual
+     * Intenta rotar la pieza
      * @param rot "cw" o "ccw" dependiendo el sentido de la rotacion
      */
     RotatePiece(rot: string){
         var [success, kick_test] = this.CheckRotation(rot)
-        var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][kick_test]
         if(success){
+            var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][kick_test]
+
             this.actualPiece.Move(kick[0], kick[1])
             this.actualPiece.Rotate(rot)
+        }
+    }
+
+    /**
+     * Intenta rotar la pieza
+     * @param vect Vector de desplazamiento
+     */
+    MovePiece(vect: [number, number]){      
+        // Se mueve 1 vez cuando se mantiene pulsado hasta que se repita con el arr 
+        console.log(!this.das_active);
+        console.log(this.arr_active);
+        console.log(this._lastTimestamp - this.startTimerArr);
+        
+        if(!this.das_active || (this.arr_active && this._lastTimestamp - this.startTimerArr > this.arr)){
+            console.log("arr");
+            
+            this.startTimerArr = this._lastTimestamp
+            if(this.CheckPosition(vect)) this.actualPiece.Move(vect[0], vect[1])
         }
     }
 

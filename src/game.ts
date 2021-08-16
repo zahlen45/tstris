@@ -7,7 +7,7 @@ import { config, pieces, colors,
 import { Tetrimino } from "./tetrimino"
 
 export class Game{
-    private _lastTimestamp = 0
+    private lastTimestamp = 0
 
     private delta: number
 
@@ -17,8 +17,12 @@ export class Game{
     queue: string[] = []
     bag: string[] = pieces.slice()
     actualPiece!: Tetrimino;
-    nextDrop: number = 500
-    lastDrop: number;
+    gravity: number = 500
+    lastGravityDrop: number;
+    
+    startTimerLock: number = 0
+    lock: number = 2000
+    lock_active: boolean = false
 
     startTimerArr: number = 0
     arr: number = 20;
@@ -33,8 +37,6 @@ export class Game{
     constructor(){
         /*
         Inicio del juego, configuracion inicial
-
-        fps configurable (?)
         */
 
         this.delta = 1000/config['fps']
@@ -48,9 +50,8 @@ export class Game{
 
         document.addEventListener('keydown', (event) => this.KeyBindings(event))
         document.addEventListener('keyup', (event) => this.KeyBindings(event))
-        // document.addEventListener('keyup', (event) => this.KeyBindingsUp(event))
 
-        this.lastDrop = Date.now()
+        this.lastGravityDrop = Date.now()
 
         // Al final de todo
         this.Update()
@@ -64,52 +65,9 @@ export class Game{
         let key = event.key
         let down = (event.type === 'keydown')
 
-        // Pasa si no es una de las que no se repiten o si es de la que se repiten, si la tecla no se repite
         if(!event.repeat) {
             keydown[key] = down
         }
-
-        //#region To be deleted
-
-        // if(event.key === "n") this.NewPiece() // Solo para depurar
-
-        /* 
-        if(event.code === "Space") { 
-            this.HoldPiece()
-            this.DrawHeldPiece()
-        }
-
-        // var pos = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(key)
-
-        switch(key){
-            case "ArrowUp":
-                this.HardDrop()
-                break;
-            case "ArrowDown":
-                if(this.CheckPosition([0, -1]) && ) this.actualPiece.Move(0, -1)
-                break;
-            case "ArrowLeft":
-                if(this.CheckPosition([-1, 0])) this.actualPiece.Move(-1, 0)
-                break;
-            case "ArrowRight":
-                if(this.CheckPosition([1, 0])) this.actualPiece.Move(1, 0) 
-                break;
-            case "a":
-                if(!keydown["a"]){
-                    keydown["a"] = true
-                    this.RotatePiece("ccw")
-                }
-                break;
-            case "d":
-                if(!keydown["d"]){
-                    keydown["d"] = true
-                    this.RotatePiece("cw")
-                }
-                break;
-            default:
-                break;
-        } */
-        //#endregion
     }
 
     KeyActions(){
@@ -180,18 +138,27 @@ export class Game{
     public Update(){
 
         // Guarda el ultimo momento por el que pasa aqui
-        this._lastTimestamp = Date.now()
-
-        var timeDrop = this._lastTimestamp - this.lastDrop  
+        this.lastTimestamp = Date.now()
 
         // Caida por gravedad
-        if(timeDrop >= this.nextDrop){ 
+        if(!this.lock_active && this.lastTimestamp - this.lastGravityDrop >= this.gravity){ 
             if(this.CheckPosition([0, -1])){
                 this.actualPiece.Move(0, -1)
-                this.lastDrop = Date.now()
-            }else{
-                this.FixPiece()
+                this.lastGravityDrop = this.lastTimestamp
             }
+            // Si esta bien escrito, no deberia ser falso el primer check
+        }
+
+        // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
+        if(!this.CheckPosition([0, -1]) && !this.lock_active) {
+            console.log("start lock");
+            
+            this.lock_active = true
+            this.startTimerLock = this.lastTimestamp
+        }
+
+        if(this.lock_active && this.lastTimestamp - this.startTimerLock >= this.lock){
+            this.FixPiece()
         }
 
         this.KeyActions()
@@ -200,7 +167,7 @@ export class Game{
         if((keydown["ArrowLeft"] || keydown["ArrowRight"]) && !this.das_active){
             console.log("start das");
             this.das_active = true
-            this.startTimerDas = this._lastTimestamp
+            this.startTimerDas = this.lastTimestamp
         }
 
         // Si !(< || >) entonces se resetea el das y el arr
@@ -212,11 +179,11 @@ export class Game{
         }
 
         // Si el das esta activo y ha pasado mas tiempo que el das establecido, se activa el arr
-        if(this.das_active && !this.arr_active && this._lastTimestamp - this.startTimerDas > this.das) {
+        if(this.das_active && !this.arr_active && this.lastTimestamp - this.startTimerDas >= this.das) {
             console.log("start arr");
 
             this.arr_active = true
-            this.startTimerArr = this._lastTimestamp
+            this.startTimerArr = this.lastTimestamp
         }
 
         this.Render()
@@ -311,15 +278,11 @@ export class Game{
      * @param vect Vector de desplazamiento
      */
     MovePiece(vect: [number, number]){      
-        // Se mueve 1 vez cuando se mantiene pulsado hasta que se repita con el arr 
-        console.log(!this.das_active);
-        console.log(this.arr_active);
-        console.log(this._lastTimestamp - this.startTimerArr);
-        
-        if(!this.das_active || (this.arr_active && this._lastTimestamp - this.startTimerArr > this.arr)){
+        // Se mueve 1 vez cuando se mantiene pulsado hasta que se repita con el arr       
+        if(!this.das_active || (this.arr_active && this.lastTimestamp - this.startTimerArr >= this.arr)){
             console.log("arr");
             
-            this.startTimerArr = this._lastTimestamp
+            this.startTimerArr = this.lastTimestamp
             if(this.CheckPosition(vect)) this.actualPiece.Move(vect[0], vect[1])
         }
     }
@@ -331,6 +294,8 @@ export class Game{
         this.actualPiece.minos.forEach(mino => {
             this.board[mino[1]][mino[0]] = this.actualPiece.type
         });
+
+        this.lock_active = false
         
         this.ClearLines()
         this.NewPiece()

@@ -149,42 +149,11 @@ export class Game{
             // Si esta bien escrito, no deberia ser falso el primer check
         }
 
-        // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
-        if(!this.CheckPosition([0, -1]) && !this.lock_active) {
-            console.log("start lock");
-            
-            this.lock_active = true
-            this.startTimerLock = this.lastTimestamp
-        }
-
-        if(this.lock_active && this.lastTimestamp - this.startTimerLock >= this.lock){
-            this.FixPiece()
-        }
-
+        this.LockControl()
+        
         this.KeyActions()
 
-        // Si < || > y no esta das activo => activa el das y empieza el timer
-        if((keydown["ArrowLeft"] || keydown["ArrowRight"]) && !this.das_active){
-            console.log("start das");
-            this.das_active = true
-            this.startTimerDas = this.lastTimestamp
-        }
-
-        // Si !(< || >) entonces se resetea el das y el arr
-        if(!keydown["ArrowLeft"] && !keydown["ArrowRight"]){
-            console.log("stop das");
-            
-            this.das_active = false
-            this.arr_active = false
-        }
-
-        // Si el das esta activo y ha pasado mas tiempo que el das establecido, se activa el arr
-        if(this.das_active && !this.arr_active && this.lastTimestamp - this.startTimerDas >= this.das) {
-            console.log("start arr");
-
-            this.arr_active = true
-            this.startTimerArr = this.lastTimestamp
-        }
+        this.ARRDASControl()
 
         this.Render()
 
@@ -253,6 +222,50 @@ export class Game{
     
     CheckBoard(pos: [number, number]): boolean{
         return this.board[pos[1]][pos[0]] === ""
+    }
+
+    ARRDASControl(){
+        // Si < || > y no esta das activo => activa el das y empieza el timer
+        if((keydown["ArrowLeft"] || keydown["ArrowRight"]) && !this.das_active){
+            console.log("start das");
+            this.das_active = true
+            this.startTimerDas = this.lastTimestamp
+        }
+
+        // Si !(< || >) entonces se resetea el das y el arr
+        if(!keydown["ArrowLeft"] && !keydown["ArrowRight"]){
+            console.log("stop das");
+            
+            this.das_active = false
+            this.arr_active = false
+        }
+
+        // Si el das esta activo y ha pasado mas tiempo que el das establecido, se activa el arr
+        if(this.das_active && !this.arr_active && this.lastTimestamp - this.startTimerDas >= this.das) {
+            console.log("start arr");
+
+            this.arr_active = true
+            this.startTimerArr = this.lastTimestamp
+        }
+    }
+
+    LockControl(){
+        // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
+        if(!this.CheckPosition([0, -1]) && !this.lock_active) {
+            console.log("start lock");
+                
+            this.lock_active = true
+            this.startTimerLock = this.lastTimestamp
+        }
+
+        if(this.CheckPosition([0, -1]) && this.lock_active)  {
+            this.lock_active = false
+            this.lastGravityDrop = this.lastTimestamp
+        }
+        
+        if(this.lock_active && this.lastTimestamp - this.startTimerLock >= this.lock){
+            this.FixPiece()
+        }
     }
 
     //#endregion

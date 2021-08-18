@@ -33,6 +33,8 @@ export class Game{
     das_active: boolean = false
 
     board: string[][] = []
+
+    clearedLines: number = 0
     
     constructor(){
         /*
@@ -193,6 +195,11 @@ export class Game{
         return result
     }
     
+    /**
+     * Comprueba si se puede hacer la rotacion de la pieza
+     * @param rot "cw"/"ccw" dependiendo de si es clockwise o counter-clockwise
+     * @returns Bool que determina si se puede hacer la rotacion y el entero que dice que test para el kick se ha usado
+     */
     CheckRotation(rot: string): [boolean, number]{
         let factor = (rot === "cw") ? -1 : 1
     
@@ -224,36 +231,35 @@ export class Game{
         return this.board[pos[1]][pos[0]] === ""
     }
 
+    /**
+     * Controla cuando se activa el DAS y ARR
+     */
     ARRDASControl(){
         // Si < || > y no esta das activo => activa el das y empieza el timer
         if((keydown["ArrowLeft"] || keydown["ArrowRight"]) && !this.das_active){
-            console.log("start das");
             this.das_active = true
             this.startTimerDas = this.lastTimestamp
         }
 
         // Si !(< || >) entonces se resetea el das y el arr
         if(!keydown["ArrowLeft"] && !keydown["ArrowRight"]){
-            console.log("stop das");
-            
             this.das_active = false
             this.arr_active = false
         }
 
         // Si el das esta activo y ha pasado mas tiempo que el das establecido, se activa el arr
         if(this.das_active && !this.arr_active && this.lastTimestamp - this.startTimerDas >= this.das) {
-            console.log("start arr");
-
             this.arr_active = true
             this.startTimerArr = this.lastTimestamp
         }
     }
 
+    /**
+     * Controla el bloqueo cuando una pieza no se puede mover para abajo en la siguiente frame
+     */
     LockControl(){
         // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
         if(!this.CheckPosition([0, -1]) && !this.lock_active) {
-            console.log("start lock");
-                
             this.lock_active = true
             this.startTimerLock = this.lastTimestamp
         }
@@ -293,8 +299,6 @@ export class Game{
     MovePiece(vect: [number, number]){      
         // Se mueve 1 vez cuando se mantiene pulsado hasta que se repita con el arr       
         if(!this.das_active || (this.arr_active && this.lastTimestamp - this.startTimerArr >= this.arr)){
-            console.log("arr");
-            
             this.startTimerArr = this.lastTimestamp
             if(this.CheckPosition(vect)) this.actualPiece.Move(vect[0], vect[1])
         }
@@ -324,8 +328,11 @@ export class Game{
 
         // Rellena las que quedan
         let new_rows = 40 - this.board.length
-        let arr = Array(new_rows).fill(Array(10).fill(""))
-        this.board.push(arr)
+        for (let i = 0; i < new_rows; i++) {
+            this.board.push(Array(10).fill(""))            
+        }
+
+        this.clearedLines += new_rows        
     }
 
     /**

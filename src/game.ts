@@ -1,5 +1,5 @@
 import { config, pieces, colors,
-        boardCanvas, heldCanvas, queueCanvas,
+        boardCanvas, heldCanvas, queueCanvas, lockProgressBar,
         kicks, spawn_dir, 
         keydown,
         arr_keys} from "./constants"
@@ -22,7 +22,9 @@ export class Game{
     
     startTimerLock: number = 0
     lock: number = 2000
-    lock_active: boolean = false
+    lockActive: boolean = false
+    lockRotationCounter: number = 0
+    lockMaxRotation: number = 15
 
     startTimerArr: number = 0
     arr: number = 20;
@@ -55,9 +57,13 @@ export class Game{
 
         this.lastGravityDrop = Date.now()
 
+        this.RestartLockProgressBar()
+
         // Al final de todo
         this.Update()
     }
+
+    //#region Eventos
 
     /**
      * Controla lo que se hace cuando se presiona una tecla
@@ -134,6 +140,8 @@ export class Game{
         }
     }
 
+    //#endregion
+
     /**
      * Game loop
      */
@@ -143,7 +151,7 @@ export class Game{
         this.lastTimestamp = Date.now()
 
         // Caida por gravedad
-        if(!this.lock_active && this.lastTimestamp - this.lastGravityDrop >= this.gravity){ 
+        if(!this.lockActive && this.lastTimestamp - this.lastGravityDrop >= this.gravity){ 
             if(this.CheckPosition([0, -1])){
                 this.actualPiece.Move(0, -1)
                 this.lastGravityDrop = this.lastTimestamp
@@ -158,6 +166,7 @@ export class Game{
         this.ARRDASControl()
 
         this.Render()
+        this.UpdateLockProgressBar()
 
         window.requestAnimationFrame(() => this.Update())
     }
@@ -173,6 +182,23 @@ export class Game{
 
         this.DrawGhostPiece()
         this.DrawActualPiece()
+    }
+
+    UpdateLockProgressBar(){
+        if(this.lockActive){
+            var progress = 1 - (this.lastTimestamp - this.startTimerLock) / this.lock
+
+            var ctx = lockProgressBar.getContext('2d')
+            ctx!.clearRect(0, 0, lockProgressBar.width, lockProgressBar.height)
+            ctx!.fillStyle = 'white'
+            ctx!.fillRect(0, 0, lockProgressBar.width * progress, 10)
+        }
+    }
+
+    RestartLockProgressBar(){
+        var ctx = lockProgressBar.getContext('2d')
+        ctx!.fillStyle = 'white'
+        ctx!.fillRect(0, 0, lockProgressBar.width, lockProgressBar.height)
     }
 
     //#region Hitboxes
@@ -222,6 +248,16 @@ export class Game{
             
         return [test_pass, test]
     }
+
+    /**
+     * Comprueba que se puede hacer una rotacion de 180º
+     * @returns Bool que dice si se puede hacer la rotacion o no
+     */
+    Check180Rotation(): boolean{
+        // TODO
+
+        return false;
+    }
     
     CheckBorders(pos: [number, number]): boolean{
         return !(pos[0] < 0 || pos[0] > 9 || pos[1] < 0)
@@ -259,17 +295,17 @@ export class Game{
      */
     LockControl(){
         // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
-        if(!this.CheckPosition([0, -1]) && !this.lock_active) {
-            this.lock_active = true
+        if(!this.CheckPosition([0, -1]) && !this.lockActive) {
+            this.lockActive = true
             this.startTimerLock = this.lastTimestamp
         }
 
-        if(this.CheckPosition([0, -1]) && this.lock_active)  {
-            this.lock_active = false
+        if(this.CheckPosition([0, -1]) && this.lockActive)  {
+            this.lockActive = false
             this.lastGravityDrop = this.lastTimestamp
         }
         
-        if(this.lock_active && this.lastTimestamp - this.startTimerLock >= this.lock){
+        if((this.lockActive && this.lastTimestamp - this.startTimerLock >= this.lock) || (this.lockRotationCounter > this.lockMaxRotation && !this.CheckPosition([0, -1]))){
             this.FixPiece()
         }
     }
@@ -285,6 +321,11 @@ export class Game{
     RotatePiece(rot: string){
         var [success, kick_test] = this.CheckRotation(rot)
         if(success){
+            if(this.lockActive) {
+                this.lockRotationCounter++;
+                this.lastGravityDrop = this.lastTimestamp
+            }
+
             var kick = kicks[this.actualPiece.type][rot][this.actualPiece.orient][kick_test]
 
             this.actualPiece.Move(kick[0], kick[1])
@@ -312,7 +353,8 @@ export class Game{
             this.board[mino[1]][mino[0]] = this.actualPiece.type
         });
 
-        this.lock_active = false
+        this.lockActive = false
+        this.RestartLockProgressBar()
         
         this.ClearLines()
         this.NewPiece()
@@ -397,6 +439,8 @@ export class Game{
     NewPiece(): void{
         this.held = false
         this.SpawnPiece()
+
+        this.lockRotationCounter = 0
     }
 
     /**

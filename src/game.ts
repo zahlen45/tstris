@@ -99,6 +99,12 @@ export class Game{
             this.RotatePiece("ccw")
             keydown["a"] = false
         }
+
+        if(keydown["s"]){
+            this.RotatePiece180()
+            keydown["s"] = false
+        } 
+
         if(keydown["d"]){
             this.RotatePiece("cw")
             keydown["d"] = false
@@ -254,9 +260,16 @@ export class Game{
      * @returns Bool que dice si se puede hacer la rotacion o no
      */
     Check180Rotation(): boolean{
-        // TODO
+        var test_pass = true
 
-        return false;
+        this.actualPiece.minos.forEach(mino => {
+            var new_x = 2 * this.actualPiece.x - mino[0]
+            var new_y = 2 * this.actualPiece.y - mino[1]
+                
+            test_pass = test_pass && this.CheckBorders([new_x, new_y]) && this.CheckBoard([new_x, new_y])
+        });
+
+        return test_pass;
     }
     
     CheckBorders(pos: [number, number]): boolean{
@@ -330,6 +343,18 @@ export class Game{
 
             this.actualPiece.Move(kick[0], kick[1])
             this.actualPiece.Rotate(rot)
+        }
+    }
+
+    RotatePiece180(){
+        var success = this.Check180Rotation()
+        if(success){
+            if(this.lockActive) {
+                this.lockRotationCounter++;
+                this.lastGravityDrop = this.lastTimestamp
+            }
+
+            this.actualPiece.Rotate180()
         }
     }
 

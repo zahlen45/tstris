@@ -65,6 +65,18 @@ export class Tetrimino{
         return false;
     }
 
+    /**
+     * Metodo que gira el tetrimino 180º
+     */
+    Rotate180(){
+        this.orient = - this.orient + 4
+        this.orient %= 4
+
+        this.minos.forEach(mino => {
+            [mino[0], mino[1]] = [2 * this.x - mino[0], 2 * this.y - mino[1]]
+        });
+    }
+
     SetGhost(y: number){
         var new_ghost: Array<number[]> = []
 

@@ -1,4 +1,4 @@
-﻿posibles nombres: 
+﻿Posibles nombres: 
 	- TSTris (TST de T-Spin Triple y TS de TypeScript)
 
 clase tetrimino:
@@ -11,7 +11,7 @@ archivo para los kicks (?)
 
 clase juego:
 
-controla toda la logica para jugar
+Controla toda la logica para jugar
 	- atributo queue que lleva la lista de las piezas siguiente
 	- atributo hold que guarda la pieza guardada
 	- "constante" que tiene el tiempo que tarda la pieza en colocarse
@@ -24,8 +24,11 @@ controla toda la logica para jugar
 		- draw_board
 	- metodos que se ejecutan cuando una tecla se presiona (eventos)
 
-problemas:
-- rotacion matematica (?)
+*****************
+*** Problemas ***
+*****************
+
+- (solucionado) Rotacion matematica 
 	> (?) solucion:
 	matrices de rotacion
 	CW
@@ -52,15 +55,12 @@ problemas:
 		y = cy - (x - cx)
 
 	para ccw es igual pero con la matriz de ccw
-
-- hard drop
-- controles, das y arr
-- centro del tetrimino para I y O ya que no estan en una celda sino en uno de los vertices (ver SRS)
+- (solucionado) Hard drop
+- (solucionado) Controles, das y arr
+- (solucionado) Centro del tetrimino para I y O ya que no estan en una celda sino en uno de los vertices (ver SRS)
 	> (?) solucion: poner como *.5 la posicion del centro en el caso de I y O. El giro segun esta planteado
 	funcionaria bien de esta manera
-
-- Planteamiento de la matriz del tablero y el movimiento de la pieza actual:
-
+- (solucionado) Planteamiento de la matriz del tablero y el movimiento de la pieza actual
 	> Traslaciones: 
 		-- Primera idea: Antes de Tetrimino.move(...) se tiene que comprobar si la posicion despues de trasladar
 		la pieza, se puede colocar o no
@@ -88,3 +88,20 @@ problemas:
 
 	> Rotaciones: (similar a las traslaciones pero hay que comprobar uno de tras de otro cada kick
 	hasta que se pueda producir una rotacion o todas fallen)
+
+- Caida infinita cuando se mueve < o >
+	> No resetear el tiempo de bloqueo cuando NO se rota (es decir, resetear cuando solo se gira)
+
+*****************
+*** Por hacer ***
+*****************
+
+- Cambio de controles y DAS/ARR
+- Cambio de opciones
+- (?) Sistema de niveles y puntuacion
+- Deteccion de T-Spines (ver SRS)
+- Tileset, temas y mejoras visuales
+	> (Mejoras visuales) CSS
+- Mejoras en el movimiento general
+	> Hacer un "pre-movimiento". Si el "pre-movimiento" se puede producir, fijarlo como movimiento
+- (?) Socket.io para 1v1

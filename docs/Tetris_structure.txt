@@ -105,3 +105,5 @@ Controla toda la logica para jugar
 - Mejoras en el movimiento general
 	> Hacer un "pre-movimiento". Si el "pre-movimiento" se puede producir, fijarlo como movimiento
 - (?) Socket.io para 1v1
+	> https://dev.to/asciiden/how-to-use-socket-io-not-the-chat-3l21
+

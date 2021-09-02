@@ -17,6 +17,7 @@ import { Tetrimino } from "./tetrimino";
 
 export class Game {
     private lastTimestamp = 0;
+    private initGame = 0;
 
     private delta?: number;
 
@@ -58,6 +59,10 @@ export class Game {
         return this._placedPieces;
     }
 
+    get timeElapsed() {
+        return Date.now() - this.initGame;
+    }
+
     constructor() {
         //this.delta = 1000 / config["fps"];
 
@@ -65,7 +70,7 @@ export class Game {
         document.addEventListener("keyup", (event) => this.KeyBindings(event));
         
         this.onNewPiece = () => {            
-            piecesLabel.textContent = this.placedPieces.toString();
+            piecesLabel.textContent = this.placedPieces.toString() + " -- " + Math.round(100000 * this.placedPieces / this.timeElapsed) / 100 + " pps"
         };
 
         this.StartNewGame();
@@ -73,6 +78,8 @@ export class Game {
     }
 
     public StartNewGame(){
+        this.initGame = Date.now();
+
         this.NewBoard();
 
         this.NewBag();

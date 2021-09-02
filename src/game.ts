@@ -6,6 +6,7 @@ import {
     heldCanvas,
     queueCanvas,
     lockProgressBar,
+    piecesLabel,
     kicks,
     spawn_dir,
     keydown,
@@ -17,7 +18,7 @@ import { Tetrimino } from "./tetrimino";
 export class Game {
     private lastTimestamp = 0;
 
-    private delta: number;
+    private delta?: number;
 
     heldPiece: string = "";
     held: boolean = false;
@@ -26,7 +27,7 @@ export class Game {
     bag: string[] = pieces.slice();
     actualPiece!: Tetrimino;
     gravity: number = 500;
-    lastGravityDrop: number;
+    lastGravityDrop: number = 0;
 
     startTimerLock: number = 0;
     lock: number = 2000;
@@ -46,9 +47,32 @@ export class Game {
 
     clearedLines: number = 0;
 
-    constructor() {
-        this.delta = 1000 / config["fps"];
+    public onNewPiece?: () => void;
 
+    private _placedPieces: number = 0;
+    set placedPieces(value: number) {        
+        this._placedPieces = value; 
+        if(this.onNewPiece) this.onNewPiece()
+    };
+    get placedPieces() {
+        return this._placedPieces;
+    }
+
+    constructor() {
+        //this.delta = 1000 / config["fps"];
+
+        document.addEventListener("keydown", (event) => this.KeyBindings(event));
+        document.addEventListener("keyup", (event) => this.KeyBindings(event));
+        
+        this.onNewPiece = () => {            
+            piecesLabel.textContent = this.placedPieces.toString();
+        };
+
+        this.StartNewGame();
+        this.Update();
+    }
+
+    public StartNewGame(){
         this.NewBoard();
 
         this.NewBag();
@@ -56,15 +80,33 @@ export class Game {
         this.SpawnPiece();
         this.DrawQueue();
 
-        document.addEventListener("keydown", (event) => this.KeyBindings(event));
-        document.addEventListener("keyup", (event) => this.KeyBindings(event));
+        this.placedPieces = 0;
 
         this.lastGravityDrop = Date.now();
 
         this.RestartLockProgressBar();
+    }
 
-        // Al final de todo
-        this.Update();
+    private RestartDefaults(){
+        this.heldPiece = "";
+        this.held = false;
+    
+        this.queue = [];
+        this.bag = pieces.slice();
+
+        this.lockRotationCounter = 0;
+
+        this.lockActive = false;
+        this.arr_active = false;
+        this.das_active = false;
+
+        this.board = [];
+
+        this.clearedLines = 0;
+
+        this.placedPieces = 0;
+
+        this.ClearAllCanvas();
     }
 
     /**
@@ -127,6 +169,15 @@ export class Game {
     }
 
     KeyActions() {
+        // Restart
+        if(keydown["r"]){
+            // Volver a los datos por defecto
+            this.RestartDefaults();
+            this.StartNewGame();
+            
+            keydown["r"] = false;
+        }
+
         // Hold
         if (keydown[" "]) {
             this.HoldPiece();
@@ -376,6 +427,7 @@ export class Game {
 
         this.ClearLines();
         this.NewPiece();
+        this.placedPieces++;
     }
 
     /**
@@ -569,6 +621,14 @@ export class Game {
         } else {
             throw new Error("No existe el canvas/contexto");
         }
+    }
+
+    ClearAllCanvas(){
+        this.ClearCanvas();
+        var ctx = heldCanvas.getContext("2d");
+        ctx!.clearRect(0, 0, heldCanvas.width, heldCanvas.height);
+        var ctx = queueCanvas.getContext("2d");
+        ctx!.clearRect(0, 0, queueCanvas.width, queueCanvas.height);
     }
 
     //#endregion

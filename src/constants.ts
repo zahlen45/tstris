@@ -49,6 +49,7 @@ export const boardCanvas: HTMLCanvasElement = document.getElementById('board') a
 export const heldCanvas: HTMLCanvasElement = document.getElementById('hold-canvas') as HTMLCanvasElement
 export const queueCanvas: HTMLCanvasElement = document.getElementById('queue-canvas') as HTMLCanvasElement
 export const lockProgressBar: HTMLCanvasElement = document.getElementById('lock-progress') as HTMLCanvasElement
+export const piecesLabel: HTMLLabelElement = document.getElementById('pieces') as HTMLLabelElement;
 
 export const config: { [opt: string]: any } = {
     "square-length": 30,

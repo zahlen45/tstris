@@ -13,6 +13,7 @@ import {
 } from "./constants";
 
 import { Tetrimino } from "./tetrimino";
+import { Timer } from "./types";
 
 export class Game {
     private lastTimestamp = 0;

@@ -159,7 +159,7 @@ export class Game {
 
     UpdateStats(){
         piecesLabel.textContent = this.placedPieces.toString() + ", " + Math.round(100000 * this.placedPieces / this.timeElapsed) / 100 + " pps"
-        linesLabel.textContent = this.clearedLines.toString() + ", " + Math.round(6000000 * this.clearedLines / this.timeElapsed) / 100 + " lines/min"
+        linesLabel.textContent = this.clearedLines.toString() + ", " + Math.round(6000000 * this.clearedLines / this.timeElapsed) / 100 + " lpm"
     }
 
     //#endregion

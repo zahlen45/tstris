@@ -11,6 +11,7 @@ import {
     spawn_dir,
     keydown,
     arr_keys,
+    linesLabel,
 } from "./constants";
 
 import { Tetrimino } from "./tetrimino";
@@ -48,12 +49,9 @@ export class Game {
 
     clearedLines: number = 0;
 
-    public onNewPiece?: () => void;
-
     private _placedPieces: number = 0;
     set placedPieces(value: number) {        
-        this._placedPieces = value; 
-        if(this.onNewPiece) this.onNewPiece()
+        this._placedPieces = value;
     };
     get placedPieces() {
         return this._placedPieces;
@@ -68,10 +66,6 @@ export class Game {
 
         document.addEventListener("keydown", (event) => this.KeyBindings(event));
         document.addEventListener("keyup", (event) => this.KeyBindings(event));
-        
-        this.onNewPiece = () => {            
-            piecesLabel.textContent = this.placedPieces.toString() + " -- " + Math.round(100000 * this.placedPieces / this.timeElapsed) / 100 + " pps"
-        };
 
         this.StartNewGame();
         this.Update();
@@ -143,6 +137,7 @@ export class Game {
 
         this.Render();
         this.UpdateLockProgressBar();
+        this.UpdateStats();
 
         window.requestAnimationFrame(() => this.Update());
     }
@@ -159,6 +154,15 @@ export class Game {
         this.DrawGhostPiece();
         this.DrawActualPiece();
     }
+
+    //#region Estadisticas
+
+    UpdateStats(){
+        piecesLabel.textContent = this.placedPieces.toString() + ", " + Math.round(100000 * this.placedPieces / this.timeElapsed) / 100 + " pps"
+        linesLabel.textContent = this.clearedLines.toString() + ", " + Math.round(6000000 * this.clearedLines / this.timeElapsed) / 100 + " lines/min"
+    }
+
+    //#endregion
 
     //#region Eventos
 

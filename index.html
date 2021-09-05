@@ -20,6 +20,7 @@
     
         /* Set width length for the left, right and middle columns */
         .left {
+            display: table-cell;
             width: 150px;
             height: 150px;
         }
@@ -74,6 +75,7 @@
         <div class="column left" id="hold-container">
             <canvas id="hold-canvas"></canvas>
             <label id="pieces" style="font-size: large; color: white;"></label>
+            <label id="lines" style="font-size: large; color: white;"></label>
         </div>
         <div class="column center" id="board-container">
             <canvas id="board"></canvas>

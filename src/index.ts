@@ -1,7 +1,7 @@
 import { Game } from './game';
-import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar } from './constants'
+import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas } from './constants'
 
-let canvases = [boardCanvas, heldCanvas, queueCanvas, lockProgressBar]
+let canvases = [gridCanvas, boardCanvas, heldCanvas, queueCanvas, lockProgressBar]
 
 canvases.forEach(element => {
     element.width = element.clientWidth;

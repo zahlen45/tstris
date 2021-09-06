@@ -12,6 +12,7 @@ import {
     keydown,
     arr_keys,
     linesLabel,
+    gridCanvas,
 } from "./constants";
 
 import { Tetrimino } from "./tetrimino";
@@ -66,6 +67,8 @@ export class Game {
 
         document.addEventListener("keydown", (event) => this.KeyBindings(event));
         document.addEventListener("keyup", (event) => this.KeyBindings(event));
+
+        this.DrawGuides();
 
         this.StartNewGame();
         this.Update();
@@ -147,8 +150,6 @@ export class Game {
      */
     Render() {
         this.ClearCanvas();
-
-        this.DrawGuides();
         this.DrawBoard();
 
         this.DrawGhostPiece();
@@ -598,10 +599,10 @@ export class Game {
             10 * config["square-length"],
             20 * config["square-length"],
         ];
-        boardCanvas?.setAttribute("width", board_size[0].toString());
-        boardCanvas?.setAttribute("height", board_size[1].toString());
+        gridCanvas?.setAttribute("width", board_size[0].toString());
+        gridCanvas?.setAttribute("height", board_size[1].toString());
 
-        var ctx = boardCanvas.getContext("2d");
+        var ctx = gridCanvas.getContext("2d");
         if (ctx != null) {
             ctx.strokeStyle = "grey";
             ctx.lineWidth = 1;

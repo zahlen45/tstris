@@ -6,78 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="assets/favicon.ico"/>
     <title>TSTris</title>
+    <link rel="stylesheet" href="/css/styles.css">
 
-    <style>
-        /*{
-            box-sizing: border-box;
-        }*/
-        /* Set additional styling options for the columns */
-        .column {
-            float: left;
-            padding: 0px;
-            height: 620px;
-        }
-    
-        /* Set width length for the left, right and middle columns */
-        .left {
-            display: table-cell;
-            width: 150px;
-            height: 150px;
-        }
-    
-        .center {
-            width: 300px;
-            height: fit-content;
-            display: inline;
-        }
-        
-        .right {
-            width: 150px;
-        }
-    
-        .row:after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-
-        #hold-canvas {
-            width: 150px;
-            height: 150px;
-            border: 2px solid whitesmoke;
-        }
-
-        #board {
-            width: 300px;
-            height: 600px;
-            background-color: black;
-            border: 2px solid whitesmoke;
-            display: inline;
-        }
-
-        #lock-progress {
-            width: 300px;
-            height: 10px;
-            background-color: black;
-            display: inline;
-        }
-
-        #queue-canvas {
-            width: 150px;
-            height: 600px;
-            border: 2px solid whitesmoke;
-        }
-
-        @font-face {
-            font-family: retro_computer;
-            src: url(/assets/fonts/retro_computer.ttf);
-        }
-
-        #pieces, #lines {
-            font-family: retro_computer;
-        }
-        
-        </style>
 </head>
 <body style="background-color: black;">
     <div class="row">

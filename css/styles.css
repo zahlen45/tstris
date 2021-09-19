@@ -22,6 +22,10 @@
     width: 150px;
 }
 
+.options {
+    float: right;
+}
+
 .row:after {
     content: "";
     display: table;
@@ -78,4 +82,12 @@ label#pieces, label#lines {
     display: block;
     font-size: large; 
     color: white;
+}
+
+.material-icons {
+    color: white;
+}
+
+#options-button {
+    font-size: 70px;
 }

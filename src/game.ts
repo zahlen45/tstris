@@ -10,6 +10,7 @@ import {
 
 import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas, piecesLabel, linesLabel } from './visual-elements';
 import { Tetrimino } from "./tetrimino";
+import { Renderer } from "./renderer";
 
 export class Game {
     private lastTimestamp = 0;
@@ -31,6 +32,7 @@ export class Game {
     lockActive: boolean = false;
     lockRotationCounter: number = 0;
     lockMaxRotation: number = 15;
+    lockProgress: number = 0;
 
     startTimerArr: number = 0;
     arr: number = 20;
@@ -56,13 +58,15 @@ export class Game {
         return Date.now() - this.initGame;
     }
 
+    renderer: Renderer;
+
     constructor() {
         //this.delta = 1000 / config["fps"];
 
+        this.renderer = new Renderer();
+
         document.addEventListener("keydown", (event) => this.KeyBindings(event));
         document.addEventListener("keyup", (event) => this.KeyBindings(event));
-
-        this.DrawGuides();
 
         this.StartNewGame();
         this.Update();
@@ -76,13 +80,13 @@ export class Game {
         this.NewBag();
         this.FirstQueue();
         this.SpawnPiece();
-        this.DrawQueue();
+        this.renderer.DrawQueue(this.queue);
 
         this.placedPieces = 0;
 
         this.lastGravityDrop = Date.now();
 
-        this.RestartLockProgressBar();
+        this.renderer.RestartLockProgressBar();
     }
 
     private RestartDefaults(){
@@ -104,7 +108,7 @@ export class Game {
 
         this.placedPieces = 0;
 
-        this.ClearAllCanvas();
+        this.renderer.ClearAllCanvas();
     }
 
     /**
@@ -126,15 +130,17 @@ export class Game {
             // Si esta bien escrito, no deberia ser falso el primer check
         }
 
-        this.LockControl();
-
         this.KeyActions();
 
+        this.LockControl();
         this.ARRDASControl();
 
+        this.UpdateGhostPiece();
+
+        this.UpdateLockProgress();
+        this.UpdateStats();         // Render solo toca los canvas (?)
+
         this.Render();
-        this.UpdateLockProgressBar();
-        this.UpdateStats();
 
         window.requestAnimationFrame(() => this.Update());
     }
@@ -143,11 +149,13 @@ export class Game {
      * Funcion que se encarga de dibujar todos los graficos
      */
     Render() {
-        this.ClearCanvas();
-        this.DrawBoard();
+        this.renderer.ClearCanvas();
+        this.renderer.DrawBoard(this.board);
 
-        this.DrawGhostPiece();
-        this.DrawActualPiece();
+        this.renderer.DrawGhostPiece(this.actualPiece);
+        this.renderer.DrawActualPiece(this.actualPiece);
+
+        this.renderer.DrawLockProgressBar(this.lockProgress);
     }
 
     //#region Estadisticas
@@ -155,6 +163,12 @@ export class Game {
     UpdateStats(){
         piecesLabel.textContent = this.placedPieces.toString() + ", " + Math.round(100000 * this.placedPieces / this.timeElapsed) / 100 + " pps"
         linesLabel.textContent = this.clearedLines.toString() + ", " + Math.round(6000000 * this.clearedLines / this.timeElapsed) / 100 + " lpm"
+    }
+
+    UpdateLockProgress() {
+        if (this.lockActive) {
+            this.lockProgress = 1 - (this.lastTimestamp - this.startTimerLock) / this.lock;
+        }
     }
 
     //#endregion
@@ -187,7 +201,7 @@ export class Game {
         // Hold
         if (keydown[" "]) {
             this.HoldPiece();
-            this.DrawHeldPiece();
+            this.renderer.DrawHeldPiece(this.heldPiece);
         }
 
         // Movement
@@ -429,7 +443,7 @@ export class Game {
         });
 
         this.lockActive = false;
-        this.RestartLockProgressBar();
+        this.renderer.RestartLockProgressBar();
 
         this.ClearLines();
         this.NewPiece();
@@ -510,7 +524,7 @@ export class Game {
         this.actualPiece = new Tetrimino(this.queue.shift()!);
         this.bag.shift();
 
-        this.DrawQueue();
+        this.renderer.DrawQueue(this.queue);
     }
 
     /**
@@ -543,136 +557,9 @@ export class Game {
     }
 
     /**
-     * Genera un nuevo tablero
+     * Calcula la posicion de la pieza fantasma
      */
-    NewBoard() {
-        var row = Array<string>(10).fill("");
-        for (let i = 0; i < 40; i++) {
-            this.board.push(row.slice());
-        }
-    }
-
-    //#endregion
-
-    //#region Graficos
-
-    //#region Tablero
-
-    /**
-     * Dibuja el tablero
-     */
-    DrawBoard() {
-        // Nota: Al principio dibujare todo cada vez que renderice la animacion aunque no cambie nada
-        // Intentare mejorarlo despues (capas?)
-
-        for (let i = 0; i < 20; i++) {
-            for (let j = 0; j < 10; j++) {
-                if (this.board[i][j] !== "") {
-                    var ctx = boardCanvas.getContext("2d");
-                    ctx!.fillStyle = colors[this.board[i][j]];
-                    ctx!.fillRect(30 * j, 600 - 30 * (i + 1), 30, 30);
-                }
-            }
-        }
-    }
-
-    /**
-     * Limpia el canvas para renderizar una nueva frame
-     */
-    ClearCanvas() {
-        var ctx = boardCanvas.getContext("2d");
-        ctx!.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
-    }
-
-    /**
-     * Dibuja las guias del tablero
-     */
-    DrawGuides() {
-        // Se establece el tamaño del canvas
-        let board_size: [number, number] = [
-            10 * config["square-length"],
-            20 * config["square-length"],
-        ];
-        gridCanvas?.setAttribute("width", board_size[0].toString());
-        gridCanvas?.setAttribute("height", board_size[1].toString());
-
-        var ctx = gridCanvas.getContext("2d");
-        if (ctx != null) {
-            ctx.strokeStyle = "grey";
-            ctx.lineWidth = 1;
-
-            // Lineas verticales
-            for (let i = 1; i < 10; i++) {
-                ctx?.beginPath();
-                ctx?.moveTo(config["square-length"] * i + 0.5, 0);
-                ctx?.lineTo(
-                    config["square-length"] * i + 0.5,
-                    config["square-length"] * 20 + 0
-                );
-                ctx?.closePath();
-                ctx?.stroke();
-            }
-
-            // Lineas horizontales
-            for (let i = 1; i < 20; i++) {
-                ctx?.beginPath();
-                ctx?.moveTo(0, config["square-length"] * i + 0.5);
-                ctx?.lineTo(
-                    config["square-length"] * 10,
-                    config["square-length"] * i + 0.5
-                );
-                ctx?.closePath();
-                ctx?.stroke();
-            }
-        } else {
-            throw new Error("No existe el canvas/contexto");
-        }
-    }
-
-    ClearAllCanvas(){
-        this.ClearCanvas();
-        var ctx = heldCanvas.getContext("2d");
-        ctx!.clearRect(0, 0, heldCanvas.width, heldCanvas.height);
-        var ctx = queueCanvas.getContext("2d");
-        ctx!.clearRect(0, 0, queueCanvas.width, queueCanvas.height);
-    }
-
-    //#endregion
-
-    //#region Tetriminos
-
-    /**
-     * Dibuja el tetrimino actual
-     */
-    DrawActualPiece() {
-        var ctx = boardCanvas.getContext("2d");
-
-        this.actualPiece.minos.forEach((mino) => {
-            ctx!.fillStyle = colors[this.actualPiece.type];
-            ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
-        });
-
-        // this.Draw_center() // Solo para depurar
-    }
-
-    /**
-     * Dibuja el centro de la pieza actual. Solo para depurar
-     */
-    DrawCenter() {
-        var ctx = boardCanvas.getContext("2d");
-        ctx!.fillStyle = "white";
-        ctx!.fillRect(
-            30 * this.actualPiece.x + 5,
-            600 - 30 * (this.actualPiece.y + 1) + 5,
-            20,
-            20
-        );
-    }
-
-    /**
-     * Dibuja la pieza fantasma para el hard drop (?)
-     */
-    DrawGhostPiece() {
+    UpdateGhostPiece(){
         var height = 1;
         var drop = false;
 
@@ -681,13 +568,6 @@ export class Game {
                 drop = true;
 
                 this.actualPiece.SetGhost(-height + 1);
-
-                var ctx = boardCanvas.getContext("2d");
-
-                ctx!.fillStyle = "grey";
-                this.actualPiece.ghostMinos.forEach((mino) => {
-                    ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
-                });
             } else {
                 height++;
             }
@@ -695,77 +575,14 @@ export class Game {
     }
 
     /**
-     * Dibuja la cola de piezas
+     * Genera un nuevo tablero
      */
-    DrawQueue() {
-        var ctx = queueCanvas.getContext("2d");
-        ctx!.clearRect(0, 0, queueCanvas.width, queueCanvas.height);
-
-        let x: number = 60;
-        let y: number = 70;
-
-        let size: number = 15;
-
-        for (let i = 0; i < this.queue.length; i++) {
-            var piece = this.queue[i];
-
-            ctx!.fillStyle = colors[piece];
-            spawn_dir[piece].forEach((center) => {
-                ctx!.fillRect(
-                    size * center[0] * 2 + x,
-                    -size * center[1] * 2 + y + 100 * i,
-                    size * 2,
-                    size * 2
-                );
-            });
+    NewBoard() {
+        var row = Array<string>(10).fill("");
+        for (let i = 0; i < 40; i++) {
+            this.board.push(row.slice());
         }
     }
-
-    /**
-     * Dibuja la pieza guardada
-     */
-    DrawHeldPiece() {
-        var ctx = heldCanvas.getContext("2d");
-        ctx!.clearRect(0, 0, heldCanvas.width, heldCanvas.height);
-
-        let x: number = 60;
-        let y: number = 70;
-
-        let size: number = 15;
-
-        ctx!.fillStyle = colors[this.heldPiece];
-        spawn_dir[this.heldPiece].forEach((center) => {
-            ctx!.fillRect(
-                size * center[0] * 2 + x,
-                -size * center[1] * 2 + y,
-                size * 2,
-                size * 2
-            );
-        });
-    }
-
-    //#endregion
-
-    //#region Progress Bar
-
-    UpdateLockProgressBar() {
-        if (this.lockActive) {
-            var progress = 1 - (this.lastTimestamp - this.startTimerLock) / this.lock;
-
-            var ctx = lockProgressBar.getContext("2d");
-            ctx!.clearRect(0, 0, lockProgressBar.width, lockProgressBar.height);
-            ctx!.fillStyle = "white";
-            ctx!.fillRect(0, 0, lockProgressBar.width * progress, 10);
-        }
-    }
-
-    RestartLockProgressBar() {
-        var ctx = lockProgressBar.getContext("2d");
-        ctx!.fillStyle = "white";
-        ctx!.fillRect(0, 0, lockProgressBar.width, lockProgressBar.height);
-    }
-
-    //#endregion
 
     //#endregion
 }

@@ -132,6 +132,8 @@ export class Game {
 
         this.ARRDASControl();
 
+        this.SetGhostPiece();
+
         this.Render();
         this.UpdateLockProgressBar();
         this.UpdateStats();
@@ -543,6 +545,24 @@ export class Game {
     }
 
     /**
+     * Calcula la posicion de la pieza fantasma
+     */
+    SetGhostPiece(){
+        var height = 1;
+        var drop = false;
+
+        while (!drop) {
+            if (!this.CheckPosition([0, -height])) {
+                drop = true;
+
+                this.actualPiece.SetGhost(-height + 1);
+            } else {
+                height++;
+            }
+        }
+    }
+
+    /**
      * Genera un nuevo tablero
      */
     NewBoard() {
@@ -673,25 +693,12 @@ export class Game {
      * Dibuja la pieza fantasma para el hard drop (?)
      */
     DrawGhostPiece() {
-        var height = 1;
-        var drop = false;
+        var ctx = boardCanvas.getContext("2d");
 
-        while (!drop) {
-            if (!this.CheckPosition([0, -height])) {
-                drop = true;
-
-                this.actualPiece.SetGhost(-height + 1);
-
-                var ctx = boardCanvas.getContext("2d");
-
-                ctx!.fillStyle = "grey";
-                this.actualPiece.ghostMinos.forEach((mino) => {
-                    ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
-                });
-            } else {
-                height++;
-            }
-        }
+        ctx!.fillStyle = "grey";
+        this.actualPiece.ghostMinos.forEach((mino) => {
+            ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
+        });
     }
 
     /**

@@ -8,3 +8,5 @@ export const piecesLabel: HTMLLabelElement = document.getElementById('pieces') a
 export const linesLabel: HTMLLabelElement = document.getElementById('lines') as HTMLLabelElement;
 
 export const optionsMenu: HTMLDivElement = document.getElementById('options-menu') as HTMLDivElement;
+export const sideNav: HTMLDivElement = document.getElementById('side-menu') as HTMLDivElement;
+export const closeSideNav: HTMLSpanElement = document.getElementById('close-sidenav') as HTMLSpanElement;

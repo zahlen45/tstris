@@ -41,13 +41,14 @@ export const spawn_dir: { [piece: string] : Array<number[]> } = {
     "T" : [[-1, 0], [0, 0], [0, 1], [1, 0]],
 }
 
-export const config: { [opt: string]: any } = {
-    "square-length": 30,
-    "fps": 60
-}
-
 // TODO: Controles
 export const keybinds: { [key: string]: any } = {}
+
+export const config: { [opt: string]: any } = {
+    "square-length": 30,
+    "controls": keybinds,
+    "ghost-piece": true
+}
 
 const jlstz_kicks: { [rot: string]: { [orient: number]: Array<[number, number]> }} = {
     "cw": {

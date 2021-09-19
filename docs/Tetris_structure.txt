@@ -7,8 +7,6 @@ clase tetrimino:
 	- metodo traslacion que mueva el tetramino
 	- metodo rotacion que controla la rotacion y los kicks
 
-archivo para los kicks (?)
-
 clase juego:
 
 Controla toda la logica para jugar
@@ -19,16 +17,18 @@ Controla toda la logica para jugar
 	- metodo hold_piece que guarda la pieza
 	- metodo gen_next_piece que genera la siguiente pieza
 
-	- metodos para dibujar el tablero (?):
-		- draw_piece
-		- draw_board
 	- metodos que se ejecutan cuando una tecla se presiona (eventos)
+
+clase renderer:
+
+Dibuja en los canvas
+	- Es necesario que la clase juego le pase todo lo necesario para renderizar (piezas, tablero, ...)
 
 *****************
 *** Problemas ***
 *****************
 
-- (solucionado) Rotacion matematica 
+- (solucionado) Rotacion discreta
 	> (?) solucion:
 	matrices de rotacion
 	CW
@@ -96,6 +96,7 @@ Controla toda la logica para jugar
 *** Por hacer ***
 *****************
 
+- Kicks para rotacion 180º
 - Cambio de controles y DAS/ARR
 - Cambio de opciones
 - (?) Sistema de niveles y puntuacion

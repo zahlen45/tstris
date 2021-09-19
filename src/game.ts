@@ -1,14 +1,11 @@
 import {
     config,
     pieces,
-    colors,
     kicks,
-    spawn_dir,
     keydown,
-    arr_keys
 } from "./constants";
 
-import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas, piecesLabel, linesLabel } from './visual-elements';
+import { piecesLabel, linesLabel } from './visual-elements';
 import { Tetrimino } from "./tetrimino";
 import { Renderer } from "./renderer";
 
@@ -105,7 +102,6 @@ export class Game {
         this.board = [];
 
         this.clearedLines = 0;
-
         this.placedPieces = 0;
 
         this.renderer.ClearAllCanvas();
@@ -362,23 +358,23 @@ export class Game {
      * Controla el bloqueo cuando una pieza no se puede mover para abajo en la siguiente frame
      */
     LockControl() {
-        // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (mal creo)
+        // Comprueba si puede caer mas. Si no, empieza el tiempo de bloqueo (regular)
         if (!this.CheckPosition([0, -1]) && !this.lockActive) {
             this.lockActive = true;
             this.startTimerLock = this.lastTimestamp;
         }
 
+        // Si se puede mover hacia abajo y el lock no esta activo, resetea el tiempo para bloquear (fix)
+        // TODO: No se puede arreglar (bien) hasta que no tenga los timers hechos
         if (this.CheckPosition([0, -1]) && this.lockActive) {
             this.lockActive = false;
             this.lastGravityDrop = this.lastTimestamp;
         }
 
-        if (
-            (this.lockActive &&
-                this.lastTimestamp - this.startTimerLock >= this.lock) ||
-            (this.lockRotationCounter > this.lockMaxRotation &&
-                !this.CheckPosition([0, -1]))
-        ) {
+        // Si el bloqueo esta activo y se pasa el tiempo de bloqueo o si se ha llegado al maximo de giros, fija la pieza
+        if ((this.lockActive && this.lastTimestamp - this.startTimerLock >= this.lock) ||
+            (this.lockRotationCounter > this.lockMaxRotation && !this.CheckPosition([0, -1]))) 
+        {
             this.FixPiece();
         }
     }

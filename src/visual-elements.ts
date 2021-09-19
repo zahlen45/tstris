@@ -6,3 +6,5 @@ export const lockProgressBar: HTMLCanvasElement = document.getElementById('lock-
 
 export const piecesLabel: HTMLLabelElement = document.getElementById('pieces') as HTMLLabelElement;
 export const linesLabel: HTMLLabelElement = document.getElementById('lines') as HTMLLabelElement;
+
+export const optionsMenu: HTMLDivElement = document.getElementById('options-menu') as HTMLDivElement;

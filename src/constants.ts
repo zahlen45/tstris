@@ -1,9 +1,5 @@
 export const pieces: string[] = ["I", "J", "L", "S", "Z", "O", "T"];
 
-export class tetrimino_defaults {
-    
-}
-
 export var keydown: { [keycode: string]: boolean } = {
     "ArrowRight": false,
     "ArrowLeft": false
@@ -44,14 +40,6 @@ export const spawn_dir: { [piece: string] : Array<number[]> } = {
     "O" : [[-0.5, 0.5], [0.5, 0.5], [-0.5, -0.5], [0.5, -0.5]],
     "T" : [[-1, 0], [0, 0], [0, 1], [1, 0]],
 }
-
-export const gridCanvas: HTMLCanvasElement = document.getElementById('board-grid') as HTMLCanvasElement
-export const boardCanvas: HTMLCanvasElement = document.getElementById('board') as HTMLCanvasElement
-export const heldCanvas: HTMLCanvasElement = document.getElementById('hold-canvas') as HTMLCanvasElement
-export const queueCanvas: HTMLCanvasElement = document.getElementById('queue-canvas') as HTMLCanvasElement
-export const lockProgressBar: HTMLCanvasElement = document.getElementById('lock-progress') as HTMLCanvasElement
-export const piecesLabel: HTMLLabelElement = document.getElementById('pieces') as HTMLLabelElement;
-export const linesLabel: HTMLLabelElement = document.getElementById('lines') as HTMLLabelElement;
 
 export const config: { [opt: string]: any } = {
     "square-length": 30,

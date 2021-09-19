@@ -1,5 +1,5 @@
 import { Game } from './game';
-import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas } from './constants'
+import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas } from './visual-elements'
 
 let canvases = [gridCanvas, boardCanvas, heldCanvas, queueCanvas, lockProgressBar]
 

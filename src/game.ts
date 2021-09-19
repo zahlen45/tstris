@@ -2,19 +2,13 @@ import {
     config,
     pieces,
     colors,
-    boardCanvas,
-    heldCanvas,
-    queueCanvas,
-    lockProgressBar,
-    piecesLabel,
     kicks,
     spawn_dir,
     keydown,
-    arr_keys,
-    linesLabel,
-    gridCanvas,
+    arr_keys
 } from "./constants";
 
+import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas, piecesLabel, linesLabel } from './visual-elements';
 import { Tetrimino } from "./tetrimino";
 
 export class Game {

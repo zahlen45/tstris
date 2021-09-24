@@ -5,10 +5,10 @@ import {
     keydown,
 } from "./constants";
 
-import { piecesLabel, linesLabel, ghostOption } from './visual-elements';
+import { piecesLabel, linesLabel, ghostOption, gridOption, gridCanvas } from './visual-elements';
 import { Tetrimino } from "./tetrimino";
 import { Renderer } from "./renderer";
-import { LogicObject, Option } from "./logic-object";
+import { LogicObject, Option, RenderOption } from "./logic-object";
 
 export class Game {
     private lastTimestamp = 0;
@@ -21,7 +21,7 @@ export class Game {
 
     queue: string[] = [];
     bag: string[] = pieces.slice();
-    actualPiece!: Tetrimino;
+    currentPiece!: Tetrimino;
     gravity: number = 500;
     lastGravityDrop: number = 0;
 
@@ -68,10 +68,11 @@ export class Game {
             if(ghostOption.checked){
                 let ghostOptionLogic = new Option(() => { this.UpdateGhostPiece(); });
                 this.gameloopList[0] = ghostOptionLogic;
+
+                //this.renderer.optionalRenderList[0] = [this.renderer.DrawGhostPiece, this.currentPiece];
             } else {
                 this.gameloopList.shift()
-
-                // TODO: Clear ghost piece 
+                this.renderer.ClearGhostPiece(this.currentPiece);
             }
         });
 
@@ -135,7 +136,7 @@ export class Game {
             this.lastTimestamp - this.lastGravityDrop >= this.gravity
         ) {
             if (this.CheckPosition([0, -1])) {
-                this.actualPiece.Move(0, -1);
+                this.currentPiece.Move(0, -1);
                 this.lastGravityDrop = this.lastTimestamp;
             }
             // Si esta bien escrito, no deberia ser falso el primer check
@@ -147,30 +148,15 @@ export class Game {
         this.ARRDASControl();
 
         for (let i = 0; i < this.gameloopList.length; i++) {
-            this.gameloopList[i].update(0);
+            this.gameloopList[i].execute(0);
         }
-
-        //this.UpdateGhostPiece();
 
         this.UpdateLockProgress();
         this.UpdateStats();         // Render solo toca los canvas (?)
 
-        this.Render();
+        this.renderer.RenderFrame(this.board, this.currentPiece, this.lockProgress);
 
         window.requestAnimationFrame(() => this.Update());
-    }
-
-    /**
-     * Funcion que se encarga de dibujar todos los graficos
-     */
-    Render() {
-        this.renderer.ClearCanvas();
-        this.renderer.DrawBoard(this.board);
-
-        this.renderer.DrawGhostPiece(this.actualPiece);
-        this.renderer.DrawActualPiece(this.actualPiece);
-
-        this.renderer.DrawLockProgressBar(this.lockProgress);
     }
 
     //#region Estadisticas
@@ -264,7 +250,7 @@ export class Game {
         var result = true;
 
         // Muy mejorable
-        this.actualPiece.minos.forEach((mino) => {
+        this.currentPiece.minos.forEach((mino) => {
             var new_x = mino[0] + vect[0];
             var new_y = mino[1] + vect[1];
 
@@ -285,22 +271,22 @@ export class Game {
         let factor = rot === "cw" ? -1 : 1;
 
         var test_pass = false;
-        var test = this.actualPiece.type === "O" ? 5 : 0;
+        var test = this.currentPiece.type === "O" ? 5 : 0;
 
         while (!test_pass && test < 5) {
             var partial_test = true;
             var kick =
-                kicks[this.actualPiece.type][rot][this.actualPiece.orient][test];
+                kicks[this.currentPiece.type][rot][this.currentPiece.orient][test];
 
-            this.actualPiece.minos.forEach((mino) => {
+            this.currentPiece.minos.forEach((mino) => {
                 var new_x =
                     kick[0] +
-                    this.actualPiece.x -
-                    factor * (mino[1] - this.actualPiece.y);
+                    this.currentPiece.x -
+                    factor * (mino[1] - this.currentPiece.y);
                 var new_y =
                     kick[1] +
-                    this.actualPiece.y +
-                    factor * (mino[0] - this.actualPiece.x);
+                    this.currentPiece.y +
+                    factor * (mino[0] - this.currentPiece.x);
 
                 partial_test =
                     partial_test &&
@@ -325,9 +311,9 @@ export class Game {
     Check180Rotation(): boolean {
         var test_pass = true;
 
-        this.actualPiece.minos.forEach((mino) => {
-            var new_x = 2 * this.actualPiece.x - mino[0];
-            var new_y = 2 * this.actualPiece.y - mino[1];
+        this.currentPiece.minos.forEach((mino) => {
+            var new_x = 2 * this.currentPiece.x - mino[0];
+            var new_y = 2 * this.currentPiece.y - mino[1];
 
             test_pass =
                 test_pass &&
@@ -415,10 +401,10 @@ export class Game {
             }
 
             var kick =
-                kicks[this.actualPiece.type][rot][this.actualPiece.orient][kick_test];
+                kicks[this.currentPiece.type][rot][this.currentPiece.orient][kick_test];
 
-            this.actualPiece.Move(kick[0], kick[1]);
-            this.actualPiece.Rotate(rot);
+            this.currentPiece.Move(kick[0], kick[1]);
+            this.currentPiece.Rotate(rot);
         }
     }
 
@@ -430,7 +416,7 @@ export class Game {
                 this.lastGravityDrop = this.lastTimestamp;
             }
 
-            this.actualPiece.Rotate180();
+            this.currentPiece.Rotate180();
         }
     }
 
@@ -445,7 +431,7 @@ export class Game {
             (this.arr_active && this.lastTimestamp - this.startTimerArr >= this.arr)
         ) {
             this.startTimerArr = this.lastTimestamp;
-            if (this.CheckPosition(vect)) this.actualPiece.Move(vect[0], vect[1]);
+            if (this.CheckPosition(vect)) this.currentPiece.Move(vect[0], vect[1]);
         }
     }
 
@@ -453,8 +439,8 @@ export class Game {
      * Fija el tetrimino actual en el tablero
      */
     FixPiece() {
-        this.actualPiece.minos.forEach((mino) => {
-            this.board[mino[1]][mino[0]] = this.actualPiece.type;
+        this.currentPiece.minos.forEach((mino) => {
+            this.board[mino[1]][mino[0]] = this.currentPiece.type;
         });
 
         this.lockActive = false;
@@ -493,7 +479,7 @@ export class Game {
         while (!drop) {
             if (!this.CheckPosition([0, -height])) {
                 drop = true;
-                this.actualPiece.Move(0, -height + 1);
+                this.currentPiece.Move(0, -height + 1);
             } else {
                 height++;
             }
@@ -536,7 +522,7 @@ export class Game {
         if (this.bag.length == 0) this.NewBag();
 
         this.queue.push(this.bag[0]);
-        this.actualPiece = new Tetrimino(this.queue.shift()!);
+        this.currentPiece = new Tetrimino(this.queue.shift()!);
         this.bag.shift();
 
         this.renderer.DrawQueue(this.queue);
@@ -560,12 +546,12 @@ export class Game {
             this.held = true;
 
             if (this.heldPiece === "") {
-                this.heldPiece = this.actualPiece.type;
+                this.heldPiece = this.currentPiece.type;
                 this.SpawnPiece();
             } else {
-                var temp = this.actualPiece.type;
+                var temp = this.currentPiece.type;
 
-                this.actualPiece = new Tetrimino(this.heldPiece);
+                this.currentPiece = new Tetrimino(this.heldPiece);
                 this.heldPiece = temp;
             }
         }
@@ -582,7 +568,7 @@ export class Game {
             if (!this.CheckPosition([0, -height])) {
                 drop = true;
 
-                this.actualPiece.SetGhost(-height + 1);
+                this.currentPiece.SetGhost(-height + 1);
             } else {
                 height++;
             }

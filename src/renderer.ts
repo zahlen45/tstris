@@ -1,4 +1,5 @@
 import { config, colors, spawn_dir } from "./constants";
+import { LogicObject } from "./logic-object";
 import { Tetrimino } from "./tetrimino";
 import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas } from './visual-elements';
 
@@ -6,9 +7,24 @@ import { boardCanvas, heldCanvas, queueCanvas, lockProgressBar, gridCanvas } fro
  * Clase que se encarga de dibujar todo en los canvas
  */
 export class Renderer{
-
     constructor(){ 
         this.DrawGuides();          // La config. permitira habilitar o deshabilitar esta opcion mas tarde
+    }
+
+    RenderFrame(board: string[][], currentPiece: Tetrimino, lockProgress: number){
+        this.ClearCanvas();
+        this.DrawBoard(board);
+
+        // Primero iria la pieza fantasma
+        this.DrawGhostPiece(currentPiece);
+        this.DrawActualPiece(currentPiece);
+
+        this.DrawLockProgressBar(lockProgress);
+
+        // // Renderizado opcional
+        // this.optionalRenderList.forEach(optRender => {
+        //     optRender(optRender.args)
+        // });
     }
 
     //#region Tablero
@@ -130,6 +146,14 @@ export class Renderer{
         ctx!.fillStyle = "grey";
         piece.ghostMinos.forEach((mino) => {
             ctx!.fillRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
+        });
+    }
+
+    ClearGhostPiece(piece: Tetrimino) {
+        var ctx = boardCanvas.getContext("2d");
+
+        piece.ghostMinos.forEach((mino) => {
+            ctx!.clearRect(30 * mino[0], 600 - 30 * (mino[1] + 1), 30, 30);
         });
     }
 

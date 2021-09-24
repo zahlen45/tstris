@@ -1,4 +1,5 @@
 export abstract class LogicObject{
+    // FIXME: Acceder a esta propiedad con un getter/setter
     priority: number = 0;
 
     abstract update(dt: number): void;
@@ -13,13 +14,17 @@ export abstract class LogicObject{
 }
 
 export class Option extends LogicObject{
-    constructor(callback: (dt: number) => void){
+    optionProcedure: () => void = () => {};
+
+    constructor(callback: () => void){
         super()
 
-        this.update = callback
+        this.optionProcedure = callback
     }
 
     override update(dt: number): void{
-        // Aqui es donde se actualizaria la posicion 
+        // Aqui es donde se actualizaria la posicion de la pieza fantasma o de cualquier
+        // procedimiento que necesite hacer
+        this.optionProcedure()
     }
 }

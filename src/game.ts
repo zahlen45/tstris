@@ -5,9 +5,10 @@ import {
     keydown,
 } from "./constants";
 
-import { piecesLabel, linesLabel } from './visual-elements';
+import { piecesLabel, linesLabel, ghostOption } from './visual-elements';
 import { Tetrimino } from "./tetrimino";
 import { Renderer } from "./renderer";
+import { LogicObject, Option } from "./logic-object";
 
 export class Game {
     private lastTimestamp = 0;
@@ -56,11 +57,25 @@ export class Game {
     }
 
     renderer: Renderer;
+    gameloopList: LogicObject[] = [];
 
     constructor() {
         //this.delta = 1000 / config["fps"];
 
         this.renderer = new Renderer();
+
+        ghostOption.addEventListener('change', (e: Event) => {
+            if(ghostOption.checked){
+                let ghostOptionLogic = new Option(() => { this.UpdateGhostPiece(); });
+                this.gameloopList[0] = ghostOptionLogic;
+            } else {
+                this.gameloopList.shift()
+
+                // TODO: Clear ghost piece 
+            }
+        });
+
+        // TODO: Initialize options
 
         document.addEventListener("keydown", (event) => this.KeyBindings(event));
         document.addEventListener("keyup", (event) => this.KeyBindings(event));
@@ -131,7 +146,11 @@ export class Game {
         this.LockControl();
         this.ARRDASControl();
 
-        this.UpdateGhostPiece();
+        for (let i = 0; i < this.gameloopList.length; i++) {
+            this.gameloopList[i].update(0);
+        }
+
+        //this.UpdateGhostPiece();
 
         this.UpdateLockProgress();
         this.UpdateStats();         // Render solo toca los canvas (?)

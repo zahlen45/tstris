@@ -13,7 +13,4 @@ optionsMenu.addEventListener("click", (e: Event) => OpenSideMenu(e));
 closeSideNav.addEventListener("click", (e: Event) => CloseSideMenu(e));
 //closeSideNav.addEventListener("focusout", (e: Event) => CloseSideMenu(e)); // No funciona
 
-gridOption.addEventListener('change', (e: Event) => { console.log(gridOption.checked); })
-ghostOption.addEventListener('change', (e: Event) => { console.log("Toggle ghost"); })
-
 var g = new Game()

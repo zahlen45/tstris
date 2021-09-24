@@ -10,3 +10,7 @@ export const linesLabel: HTMLLabelElement = document.getElementById('lines') as 
 export const optionsMenu: HTMLDivElement = document.getElementById('options-menu') as HTMLDivElement;
 export const sideNav: HTMLDivElement = document.getElementById('side-menu') as HTMLDivElement;
 export const closeSideNav: HTMLSpanElement = document.getElementById('close-sidenav') as HTMLSpanElement;
+
+// Option controls
+export const gridOption: HTMLInputElement = document.getElementById('grid-option') as HTMLInputElement;
+export const ghostOption: HTMLInputElement = document.getElementById('ghost-option') as HTMLInputElement;

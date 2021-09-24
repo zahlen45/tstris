@@ -106,3 +106,5 @@ Dibuja en los canvas
 - Mejoras en el movimiento general
 	> Hacer un "pre-movimiento". Si el "pre-movimiento" se puede producir, fijarlo como movimiento
 - (?) Socket.io para 1v1
+- Habilitar/Deshabilitar funcionalidad (ghost piece, grid, ...) sin condicionales en cada iteracion de gameloop
+	> (posible solucion) https://gamedev.stackexchange.com/a/55337

@@ -22,6 +22,17 @@
     width: 150px;
 }
 
+.sidenav {
+    float: right;
+    width: 0;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #202020;
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
 .options {
     float: right;
 }
@@ -90,15 +101,4 @@ label#pieces, label#lines {
 
 #options-button {
     font-size: 70px;
-}
-
-.sidenav {
-    float: left;
-    width: 0;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    background-color: #202020;
-    overflow-x: hidden;
-    transition: 0.5s;
 }
